@@ -25,7 +25,7 @@ export function ProviderCard({
       <div className="p-5">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <p className="text-sm font-semibold text-forest-700">{provider.category}</p>
+            <p className="text-sm font-semibold text-amber-700">{provider.category}</p>
             <h3 className="mt-1 text-xl font-bold text-warm-900">{provider.name}</h3>
             <p className="mt-1 flex items-center gap-1 text-sm text-warm-600">
               <MapPin className="h-4 w-4" aria-hidden="true" />
@@ -43,15 +43,15 @@ export function ProviderCard({
             <strong>{provider.rating}</strong> ({provider.reviews})
           </span>
           <span className="flex items-center gap-2 text-warm-700">
-            <BriefcaseBusiness className="h-4 w-4 text-forest-700" aria-hidden="true" />
+            <BriefcaseBusiness className="h-4 w-4 text-amber-700" aria-hidden="true" />
             {provider.completedJobs} jobs
           </span>
           <span className="flex items-center gap-2 text-warm-700">
-            <TimerReset className="h-4 w-4 text-forest-700" aria-hidden="true" />
+            <TimerReset className="h-4 w-4 text-amber-700" aria-hidden="true" />
             {provider.cancellationRate}% cancel
           </span>
           <span className="flex items-center gap-2 text-warm-700">
-            <ShieldCheck className="h-4 w-4 text-forest-700" aria-hidden="true" />
+            <ShieldCheck className="h-4 w-4 text-amber-700" aria-hidden="true" />
             From ৳{provider.startingPrice}
           </span>
         </div>

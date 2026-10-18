@@ -64,7 +64,7 @@ export function BookingFlow({ provider }: { provider: Provider }) {
     <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <p className="text-sm font-bold text-forest-700">
+          <p className="text-sm font-bold text-amber-700">
             Book a professional
           </p>
           <h1 className="mt-2 text-3xl font-bold text-warm-900">
@@ -84,10 +84,10 @@ export function BookingFlow({ provider }: { provider: Provider }) {
           <li
             key={label}
             aria-current={index === step ? "step" : undefined}
-            className={`flex items-center gap-3 rounded-xl border p-3 ${index === step ? "border-forest-500 bg-forest-50" : "border-warm-200 bg-white"}`}
+            className={`flex items-center gap-3 rounded-xl border p-3 ${index === step ? "border-amber-400 bg-amber-50" : "border-warm-200 bg-white"}`}
           >
             <span
-              className={`grid h-8 w-8 shrink-0 place-items-center rounded-full text-sm font-bold ${index <= step ? "bg-forest-700 text-white" : "bg-warm-100 text-warm-700"}`}
+              className={`grid h-8 w-8 shrink-0 place-items-center rounded-full text-sm font-bold ${index <= step ? "bg-brand-amber text-white" : "bg-warm-100 text-warm-700"}`}
             >
               {index < step ? <Check size={16} /> : index + 1}
             </span>
@@ -98,7 +98,7 @@ export function BookingFlow({ provider }: { provider: Provider }) {
 
       {step === 3 ? (
         <Card className="mx-auto max-w-2xl p-8 text-center" role="status">
-          <CheckCircle2 className="mx-auto h-12 w-12 text-forest-600" />
+          <CheckCircle2 className="mx-auto h-12 w-12 text-brand-amber" />
           <h2 className="mt-4 text-2xl font-bold">Demo booking confirmed</h2>
           <p className="mt-3 leading-7 text-warm-700">
             Your sample request for {selectedService.name} with {provider.name}{" "}
@@ -261,7 +261,7 @@ export function BookingFlow({ provider }: { provider: Provider }) {
                       required
                       checked={agreed}
                       onChange={(event) => setAgreed(event.target.checked)}
-                      className="mt-1 h-4 w-4 accent-forest-700"
+                      className="mt-1 h-4 w-4 accent-brand-amber"
                     />
                     <span>
                       I accept the demo cancellation terms and understand that
@@ -297,7 +297,7 @@ export function BookingFlow({ provider }: { provider: Provider }) {
           <aside className="h-fit">
             <Card className="p-6">
               <h2 className="flex items-center gap-3 text-xl font-bold">
-                <CalendarDays className="text-forest-700" size={24} />
+                <CalendarDays className="text-amber-700" size={24} />
                 Booking summary
               </h2>
               <dl className="mt-5 grid gap-3 text-sm">
@@ -343,7 +343,7 @@ function SummaryRow({
     <div className="flex justify-between gap-4 border-b border-warm-100 pb-3">
       <dt className="shrink-0 text-warm-700">{label}</dt>
       <dd
-        className={`min-w-0 break-words text-right ${strong ? "font-bold text-forest-800" : "font-semibold text-warm-900"}`}
+        className={`min-w-0 break-words text-right ${strong ? "font-bold text-amber-900" : "font-semibold text-warm-900"}`}
       >
         {value}
       </dd>

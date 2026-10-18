@@ -24,7 +24,7 @@ export function AdminDashboard() {
         All statistics, verification states, and ML predictions on this screen are illustrative demo data.
       </div>
 
-      <div className="grid gap-5 md:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 sm:gap-5 xl:grid-cols-4">
         <StatCard admin label="Providers" value="1,284" detail="demo active records" icon={Wrench} />
         <StatCard admin label="Bookings" value="8,742" detail="demo lifetime total" icon={CalendarCheck} />
         <StatCard admin label="Pending verification" value="93" detail="needs ops review" icon={FileCheck2} />
@@ -33,12 +33,12 @@ export function AdminDashboard() {
 
       <div className="mt-6 grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
         <Card className="p-6">
-          <h2 className="text-xl font-bold text-slate-950">Booking trends and cancellation rates</h2>
-          <div className="mt-6 flex h-64 items-end gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4">
+          <h2 className="text-xl font-bold text-warm-900">Booking trends and cancellation rates</h2>
+          <div className="mt-6 flex h-64 items-end gap-3 rounded-2xl border border-warm-200 bg-warm-50 p-4">
             {[52, 68, 61, 82, 76, 91, 88, 95].map((height, index) => (
               <div key={index} className="flex flex-1 flex-col items-center gap-2">
-                <div className="w-full rounded-t-lg bg-forest-700" style={{ height: `${height}%` }} />
-                <span className="text-xs font-semibold text-slate-500">W{index + 1}</span>
+                <div className="w-full rounded-t-lg bg-brand-amber" style={{ height: `${height}%` }} />
+                <span className="text-xs font-semibold text-warm-500">W{index + 1}</span>
               </div>
             ))}
           </div>
@@ -50,8 +50,8 @@ export function AdminDashboard() {
         </Card>
 
         <Card className="p-6">
-          <h2 className="text-xl font-bold text-slate-950">ML performance panel</h2>
-          <p className="mt-1 text-sm text-slate-500">Model version: review-risk-demo-v0.3</p>
+          <h2 className="text-xl font-bold text-warm-900">ML performance panel</h2>
+          <p className="mt-1 text-sm text-warm-500">Model version: review-risk-demo-v0.3</p>
           <div className="mt-5 grid gap-4">
             {[
               ["Precision", "0.86"],
@@ -60,12 +60,12 @@ export function AdminDashboard() {
               ["Review queue SLA", "92%"]
             ].map(([label, value]) => (
               <div key={label}>
-                <div className="mb-1 flex justify-between text-sm font-semibold text-slate-700">
+                <div className="mb-1 flex justify-between text-sm font-semibold text-warm-700">
                   <span>{label}</span>
                   <span>{value}</span>
                 </div>
-                <div className="h-2 rounded-full bg-slate-100">
-                  <div className="h-2 rounded-full bg-forest-700" style={{ width: `${Number(value) ? Number(value) * 100 : 92}%` }} />
+                <div className="h-2 rounded-full bg-warm-100">
+                  <div className="h-2 rounded-full bg-brand-amber" style={{ width: `${Number(value) ? Number(value) * 100 : 92}%` }} />
                 </div>
               </div>
             ))}
@@ -74,13 +74,13 @@ export function AdminDashboard() {
       </div>
 
       <Card className="mt-6 overflow-hidden">
-        <div className="border-b border-slate-200 p-5">
-          <h2 className="text-xl font-bold text-slate-950">Suspicious review activity</h2>
-          <p className="mt-1 text-sm text-slate-500">Risk indicators are demo signals for operator review, not automatic enforcement.</p>
+        <div className="border-b border-warm-200 p-5">
+          <h2 className="text-xl font-bold text-warm-900">Suspicious review activity</h2>
+          <p className="mt-1 text-sm text-warm-500">Risk indicators are demo signals for operator review, not automatic enforcement.</p>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full min-w-[900px] text-left text-sm">
-            <thead className="bg-slate-50 text-xs uppercase tracking-[0.12em] text-slate-500">
+            <thead className="bg-warm-50 text-xs uppercase tracking-[0.12em] text-warm-500">
               <tr>
                 {["Case", "Reviewer", "Provider", "Risk", "Reason summary", "Evidence", "Action"].map((head) => (
                   <th key={head} className="px-5 py-3 font-bold">{head}</th>
@@ -89,15 +89,15 @@ export function AdminDashboard() {
             </thead>
             <tbody>
               {adminCases.map((caseItem) => (
-                <tr key={caseItem.id} className="border-t border-slate-100">
-                  <td className="px-5 py-4 font-semibold text-slate-950">{caseItem.id}</td>
+                <tr key={caseItem.id} className="border-t border-warm-100">
+                  <td className="px-5 py-4 font-semibold text-warm-900">{caseItem.id}</td>
                   <td className="px-5 py-4">{caseItem.reviewer}</td>
                   <td className="px-5 py-4">{caseItem.provider}</td>
                   <td className="px-5 py-4">
                     <Badge tone={caseItem.risk === "High" ? "danger" : caseItem.risk === "Medium" ? "warning" : "neutral"}>{caseItem.risk}</Badge>
                   </td>
                   <td className="px-5 py-4">{caseItem.reason}</td>
-                  <td className="px-5 py-4 font-semibold text-forest-700">{caseItem.evidence}</td>
+                  <td className="px-5 py-4 font-semibold text-amber-800">{caseItem.evidence}</td>
                   <td className="px-5 py-4">
                     <Button variant="secondary">Review Case</Button>
                   </td>
@@ -118,9 +118,9 @@ export function AdminDashboard() {
 
 function MiniMetric({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-4">
-      <p className="text-xs font-bold uppercase tracking-[0.12em] text-slate-500">{label}</p>
-      <p className="mt-2 text-xl font-bold text-slate-950">{value}</p>
+    <div className="rounded-2xl border border-warm-200 bg-white p-4">
+      <p className="text-xs font-bold uppercase tracking-[0.12em] text-warm-500">{label}</p>
+      <p className="mt-2 text-xl font-bold text-warm-900">{value}</p>
     </div>
   );
 }
@@ -128,10 +128,10 @@ function MiniMetric({ label, value }: { label: string; value: string }) {
 function OpsPanel({ title, items }: { title: string; items: string[] }) {
   return (
     <Card className="p-6">
-      <h2 className="text-xl font-bold text-slate-950">{title}</h2>
+      <h2 className="text-xl font-bold text-warm-900">{title}</h2>
       <div className="mt-4 grid gap-3">
         {items.map((item) => (
-          <div key={item} className="rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm font-semibold text-slate-700">
+          <div key={item} className="rounded-xl border border-warm-200 bg-warm-50 p-3 text-sm font-semibold text-warm-700">
             {item}
           </div>
         ))}

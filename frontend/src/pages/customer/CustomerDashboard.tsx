@@ -66,15 +66,15 @@ export function CustomerDashboard() {
           <h2 className="text-xl font-bold text-warm-900">Saved providers</h2>
           <div className="mt-4 grid gap-3">
             {providers.slice(0, 3).map((provider) => (
-              <div key={provider.id} className="flex items-center justify-between gap-3 rounded-xl border border-warm-200 p-3">
-                <div className="flex items-center gap-3">
+              <div key={provider.id} className="flex min-w-0 items-center justify-between gap-2 rounded-xl border border-warm-200 p-3 sm:gap-3">
+                <div className="flex min-w-0 items-center gap-2 sm:gap-3">
                   <img src={provider.image} alt="" className="h-12 w-12 rounded-xl object-cover" />
-                  <div>
-                    <p className="font-bold text-warm-900">{provider.name}</p>
-                    <p className="text-sm text-warm-600">{provider.category} in {provider.area}</p>
+                  <div className="min-w-0">
+                    <p className="truncate font-bold text-warm-900">{provider.name}</p>
+                    <p className="truncate text-sm text-warm-600">{provider.category} in {provider.area}</p>
                   </div>
                 </div>
-                <Button variant="secondary">Rebook</Button>
+                <Button className="shrink-0 px-3 sm:px-4" variant="secondary">Rebook</Button>
               </div>
             ))}
           </div>

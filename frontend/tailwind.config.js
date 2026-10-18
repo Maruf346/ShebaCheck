@@ -45,7 +45,7 @@ export default {
         "home-button": "0 6px 16px -3px rgb(255 160 0 / 40%)",
         "home-button-hover": "0 8px 20px -3px rgb(255 160 0 / 45%)",
         "home-icon": "0 6px 16px rgb(255 160 0 / 25%)",
-        soft: "0 18px 55px rgba(5, 45, 31, 0.08)",
+        soft: "0 18px 55px rgba(180, 83, 9, 0.08)",
       },
       maxWidth: {
         marketplace: "1240px",

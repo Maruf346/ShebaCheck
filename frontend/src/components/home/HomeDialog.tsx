@@ -28,7 +28,7 @@ export function HomeDialog({
   }, []);
   return createPortal(
     <dialog
-      className="m-auto max-h-[calc(100dvh-48px)] w-[min(540px,calc(100%-32px))] overflow-auto rounded-[20px] border border-stone-200 bg-white p-0 text-brand-ink shadow-[0_24px_80px_rgb(0_0_0/20%)] backdrop:bg-brand-ink/50 font-sans tracking-normal [&_*]:tracking-normal [&_svg]:shrink-0 motion-reduce:[&_*]:!transition-none motion-reduce:[&_*]:!animate-none [&_:is(button,a,input,select):focus-visible]:outline [&_:is(button,a,input,select):focus-visible]:outline-[3px] [&_:is(button,a,input,select):focus-visible]:outline-offset-4 [&_:is(button,a,input,select):focus-visible]:outline-forest-700 [&_h2]:mt-5 [&_h2]:mb-4 [&_h2]:text-[25px] [&_h2]:leading-8 [&_h2]:font-extrabold [&_p]:mb-3.5 [&_p]:text-sm [&_p]:leading-6 [&_p]:text-stone-600"
+      className="m-auto max-h-[calc(100dvh-48px)] w-[min(540px,calc(100%-32px))] overflow-auto rounded-[20px] border border-stone-200 bg-white p-0 text-brand-ink shadow-[0_24px_80px_rgb(0_0_0/20%)] backdrop:bg-brand-ink/50 font-sans tracking-normal [&_*]:tracking-normal [&_svg]:shrink-0 motion-reduce:[&_*]:!transition-none motion-reduce:[&_*]:!animate-none [&_:is(button,a,input,select):focus-visible]:outline [&_:is(button,a,input,select):focus-visible]:outline-[3px] [&_:is(button,a,input,select):focus-visible]:outline-offset-4 [&_:is(button,a,input,select):focus-visible]:outline-amber-500 [&_h2]:mt-5 [&_h2]:mb-4 [&_h2]:text-[25px] [&_h2]:leading-8 [&_h2]:font-extrabold [&_p]:mb-3.5 [&_p]:text-sm [&_p]:leading-6 [&_p]:text-stone-600"
       ref={ref}
       aria-labelledby={titleId}
       onCancel={(event) => {

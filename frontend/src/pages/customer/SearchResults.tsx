@@ -11,7 +11,7 @@ export function SearchResults({ onSelectProvider }: { onSelectProvider: (provide
     <main className="mx-auto grid max-w-7xl gap-6 px-4 py-8 sm:px-6 lg:grid-cols-[280px_1fr] lg:px-8">
       <aside className="surface h-fit p-5">
         <div className="flex items-center gap-2 border-b border-warm-200 pb-4">
-          <Filter className="h-5 w-5 text-forest-700" aria-hidden="true" />
+          <Filter className="h-5 w-5 text-amber-700" aria-hidden="true" />
           <h2 className="font-bold text-warm-900">Filters</h2>
         </div>
         <div className="mt-5 grid gap-4">
@@ -30,7 +30,7 @@ export function SearchResults({ onSelectProvider }: { onSelectProvider: (provide
       <section>
         <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
           <div>
-            <p className="text-sm font-bold uppercase tracking-[0.14em] text-forest-700">Search results</p>
+            <p className="text-sm font-bold uppercase tracking-[0.14em] text-amber-700">Search results</p>
             <h1 className="mt-2 text-3xl font-bold text-warm-900">Trusted home service providers in Dhaka</h1>
             <p className="mt-2 text-warm-600">{providers.length} demo results for home services near Mirpur, Dhanmondi, Uttara, and Mohammadpur.</p>
           </div>

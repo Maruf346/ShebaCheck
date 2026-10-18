@@ -1,4 +1,14 @@
-import { Bell, MapPin, Menu, X } from "lucide-react";
+import {
+  Bell,
+  BriefcaseBusiness,
+  CalendarDays,
+  MapPin,
+  Menu,
+  Search,
+  ShieldCheck,
+  UserRound,
+  X,
+} from "lucide-react";
 import { useState } from "react";
 import { homeLocations } from "../../data/homeContent";
 import type { AppPage } from "../../types";
@@ -20,9 +30,13 @@ interface HomeHeaderProps {
 }
 
 const sectionLinks = [
-  { id: "services", label: "Find Services" },
-  { id: "how-it-works", label: "How It Works" },
-  { id: "become-provider", label: "Become a Provider" },
+  { id: "services", label: "Find Services", icon: Search },
+  { id: "how-it-works", label: "How It Works", icon: ShieldCheck },
+  {
+    id: "become-provider",
+    label: "Become a Provider",
+    icon: BriefcaseBusiness,
+  },
 ];
 
 export function HomeHeader({
@@ -52,16 +66,17 @@ export function HomeHeader({
           className="hidden items-center gap-5 whitespace-nowrap lg:flex wide:gap-7"
           aria-label="Main navigation"
         >
-          {sectionLinks.map(({ id, label }, index) => (
+          {sectionLinks.map(({ id, label, icon: Icon }, index) => (
             <a
               key={id}
-              className={`py-1 text-sm leading-[21px] transition-colors duration-[160ms] hover:text-brand-ink ${index === 0 ? "border-b-2 border-brand-amber font-bold text-brand-ink" : "font-semibold text-stone-500"}`}
+              className={`inline-flex items-center gap-2 py-1 text-sm leading-[21px] transition-colors duration-[160ms] hover:text-brand-ink ${index === 0 ? "border-b-2 border-brand-amber font-bold text-brand-ink" : "font-semibold text-stone-500"}`}
               href={`#${id}`}
               onClick={(event) => {
                 event.preventDefault();
                 onSection(id);
               }}
             >
+              <Icon className="h-4 w-4 text-brand-amber" aria-hidden="true" />
               {label}
             </a>
           ))}
@@ -89,12 +104,14 @@ export function HomeHeader({
             className="inline-flex shrink-0 items-center justify-center rounded-full border border-transparent font-bold transition-[background,box-shadow,transform] duration-[160ms] active:scale-[0.98] hidden min-h-[34px] gap-[7px] !border-stone-200 px-4 py-2 text-xs leading-4 text-stone-800 hover:bg-stone-100 md:inline-flex"
             onClick={() => setPage("customer-dashboard")}
           >
+            <UserRound size={15} aria-hidden="true" />
             Sign In
           </button>
           <button
             className="inline-flex shrink-0 items-center justify-center rounded-full border border-transparent font-bold transition-[background,box-shadow,transform] duration-[160ms] active:scale-[0.98] hidden min-h-[34px] gap-[7px] bg-brand-ink px-[13px] py-2 text-[11px] leading-4 text-brand-yellow shadow-[0_2px_5px_rgb(17_24_39/15%)] hover:bg-black xs:inline-flex md:px-5 md:text-xs"
             onClick={onBook}
           >
+            <CalendarDays size={15} aria-hidden="true" />
             Book a Pro
           </button>
           <button
@@ -114,7 +131,7 @@ export function HomeHeader({
           id="home-mobile-menu"
           aria-label="Mobile navigation"
         >
-          {sectionLinks.map(({ id, label }) => (
+          {sectionLinks.map(({ id, label, icon: Icon }) => (
             <a
               key={id}
               href={`#${id}`}
@@ -124,10 +141,20 @@ export function HomeHeader({
                 onSection(id);
               }}
             >
+              <Icon className="mr-2 inline h-4 w-4 text-brand-amber" aria-hidden="true" />
               {label}
             </a>
           ))}
-          <button onClick={() => setPage("customer-dashboard")}>Sign In</button>
+          <button
+            className="inline-flex items-center gap-3"
+            onClick={() => {
+              setMenuOpen(false);
+              setPage("customer-dashboard");
+            }}
+          >
+            <UserRound className="h-4 w-4 text-brand-amber" aria-hidden="true" />
+            Sign In
+          </button>
         </nav>
       )}
     </header>

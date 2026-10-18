@@ -17,7 +17,7 @@ export function ProviderProfile({ setPage, provider }: { setPage: (page: AppPage
           <div className="p-6 lg:p-8">
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div>
-                <p className="font-semibold text-forest-700">{provider.category} specialist</p>
+                <p className="font-semibold text-amber-700">{provider.category} specialist</p>
                 <h1 className="mt-2 text-3xl font-bold text-warm-900">{provider.name}</h1>
                 <p className="mt-3 max-w-2xl leading-7 text-warm-700">{provider.bio}</p>
               </div>
@@ -49,7 +49,7 @@ export function ProviderProfile({ setPage, provider }: { setPage: (page: AppPage
                     <p className="font-bold text-warm-900">{service.name}</p>
                     <p className="text-sm text-warm-600">{service.note}</p>
                   </div>
-                  <p className="font-bold text-forest-800">{service.price}</p>
+                  <p className="font-bold text-amber-900">{service.price}</p>
                 </div>
               ))}
             </div>
@@ -60,7 +60,7 @@ export function ProviderProfile({ setPage, provider }: { setPage: (page: AppPage
             <div className="mt-5 grid gap-4 md:grid-cols-3">
               {provider.portfolio.map((item) => (
                 <div key={item} className="rounded-xl border border-warm-200 bg-warm-50 p-4">
-                  <ShieldCheck className="h-5 w-5 text-forest-700" aria-hidden="true" />
+                  <ShieldCheck className="h-5 w-5 text-amber-700" aria-hidden="true" />
                   <p className="mt-3 text-sm font-semibold leading-6 text-warm-800">{item}</p>
                 </div>
               ))}
@@ -98,7 +98,7 @@ export function ProviderProfile({ setPage, provider }: { setPage: (page: AppPage
                   <span>{value}</span>
                 </div>
                 <div className="h-2 rounded-full bg-warm-100">
-                  <div className="h-2 rounded-full bg-forest-600" style={{ width: value }} />
+                  <div className="h-2 rounded-full bg-brand-amber" style={{ width: value }} />
                 </div>
               </div>
             ))}
@@ -109,7 +109,7 @@ export function ProviderProfile({ setPage, provider }: { setPage: (page: AppPage
             <div className="mt-5 grid gap-4">
               {trustExplainers.map((item) => (
                 <div key={item.title} className="flex gap-3">
-                  <item.icon className="mt-1 h-5 w-5 shrink-0 text-forest-700" aria-hidden="true" />
+                  <item.icon className="mt-1 h-5 w-5 shrink-0 text-amber-700" aria-hidden="true" />
                   <div>
                     <p className="font-bold text-warm-900">{item.title}</p>
                     <p className="mt-1 text-sm leading-6 text-warm-600">{item.body}</p>
@@ -127,7 +127,7 @@ export function ProviderProfile({ setPage, provider }: { setPage: (page: AppPage
 function Metric({ icon: Icon, label, value, detail }: { icon: typeof Star; label: string; value: string; detail: string }) {
   return (
     <div className="rounded-xl border border-warm-200 bg-warm-50 p-4">
-      <Icon className="h-5 w-5 text-forest-700" aria-hidden="true" />
+      <Icon className="h-5 w-5 text-amber-700" aria-hidden="true" />
       <p className="mt-3 text-xs font-semibold uppercase tracking-[0.12em] text-warm-500">{label}</p>
       <p className="mt-1 text-xl font-bold text-warm-900">{value}</p>
       <p className="text-xs text-warm-500">{detail}</p>

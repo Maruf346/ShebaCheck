@@ -5,7 +5,7 @@ const tones: Record<StatusTone, string> = {
   warning: "border-amber-200 bg-amber-50 text-amber-800",
   neutral: "border-warm-200 bg-warm-50 text-warm-700",
   danger: "border-red-200 bg-red-50 text-red-800",
-  info: "border-sky-200 bg-sky-50 text-sky-800"
+  info: "border-amber-200 bg-amber-50 text-amber-900"
 };
 
 export function Badge({ children, tone = "neutral" }: { children: React.ReactNode; tone?: StatusTone }) {
