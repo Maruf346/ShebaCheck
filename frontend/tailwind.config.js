@@ -27,7 +27,7 @@ export default {
         soft: "0 18px 55px rgba(5, 45, 31, 0.08)"
       },
       fontFamily: {
-        sans: ["Inter", "ui-sans-serif", "system-ui", "Segoe UI", "Arial", "sans-serif"]
+        sans: ["Plus Jakarta Sans", "ui-sans-serif", "system-ui", "Segoe UI", "Arial", "sans-serif"]
       }
     }
   },

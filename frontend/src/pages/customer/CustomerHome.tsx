@@ -11,24 +11,31 @@ import { SectionHeading } from "../../components/ui/SectionHeading";
 export function CustomerHome({ setPage }: { setPage: (page: AppPage) => void }) {
   return (
     <main>
-      <section className="relative overflow-hidden bg-white">
+      <section className="relative overflow-hidden bg-[linear-gradient(145deg,#ffbf1a_0%,#f5a30b_48%,#f47d20_100%)]">
+        <div className="pointer-events-none absolute left-[10%] top-[-18%] h-[520px] w-[520px] rounded-full bg-white/25 blur-3xl" />
+        <div className="pointer-events-none absolute bottom-[-22%] right-[-8%] h-[420px] w-[420px] rounded-full bg-forest-900/15 blur-3xl" />
         <div className="mx-auto grid max-w-7xl gap-10 px-4 py-14 sm:px-6 md:py-20 lg:grid-cols-[1.05fr_0.95fr] lg:px-8">
-          <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45 }}>
-            <p className="inline-flex rounded-full border border-forest-100 bg-forest-50 px-3 py-1 text-sm font-bold text-forest-800">
-              Trust-first home services in Dhaka
+          <motion.div
+            className="relative rounded-[1.75rem] border border-white/80 bg-white p-6 shadow-soft md:p-9"
+            initial={{ opacity: 0, y: 18 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.45 }}
+          >
+            <p className="inline-flex rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-sm font-bold text-amber-900">
+              Bangladesh-focused verified home services
             </p>
             <h1 className="mt-5 max-w-3xl text-4xl font-bold leading-tight text-warm-900 md:text-5xl">
               Find skilled professionals you can trust.
             </h1>
             <p className="mt-5 max-w-2xl text-lg leading-8 text-warm-700">
-              Compare verified work history, booking completion, customer reviews, and cancellation patterns before you invite someone into your home.
+              Compare NID-style verification signals, work history, booking completion, customer reviews, and cancellation patterns before you invite someone into your home.
             </p>
 
-            <Card className="mt-8 p-4">
+            <Card className="mt-8 border-warm-100 p-3 shadow-sm">
               <div className="grid gap-3 md:grid-cols-[1fr_1fr_auto]">
                 <InputField label="Service" placeholder="Electrical, plumbing, cleaning" />
                 <InputField label="Location" placeholder="Mirpur, Dhanmondi, Uttara" />
-                <Button className="self-end" icon={<Search className="h-4 w-4" />} onClick={() => setPage("search")}>
+                <Button className="self-end bg-warm-900 text-amber-300 hover:bg-black" icon={<Search className="h-4 w-4" />} onClick={() => setPage("search")}>
                   Search
                 </Button>
               </div>
@@ -36,11 +43,11 @@ export function CustomerHome({ setPage }: { setPage: (page: AppPage) => void }) 
 
             <div className="mt-7 grid gap-3 sm:grid-cols-3">
               {[
-                ["12k+", "demo completed bookings"],
+                ["NID", "verification-ready UI"],
                 ["4.8/5", "average demo rating"],
-                ["24 hr", "support response target"]
+                ["7 day", "warranty policy placeholder"]
               ].map(([value, label]) => (
-                <div key={label} className="rounded-xl border border-warm-200 bg-warm-50 px-4 py-3">
+                <div key={label} className="rounded-xl border border-amber-100 bg-amber-50 px-4 py-3">
                   <p className="text-xl font-bold text-warm-900">{value}</p>
                   <p className="text-xs font-semibold text-warm-500">{label}</p>
                 </div>
@@ -52,11 +59,11 @@ export function CustomerHome({ setPage }: { setPage: (page: AppPage) => void }) 
             <img
               src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80"
               alt="Bright Dhaka apartment living room ready for home service"
-              className="h-full min-h-[420px] w-full rounded-2xl object-cover"
+              className="h-full min-h-[420px] w-full rounded-[1.75rem] border border-white/60 object-cover shadow-soft"
             />
             <div className="absolute bottom-4 left-4 right-4 rounded-2xl border border-white/70 bg-white/95 p-4 shadow-soft">
               <div className="flex items-start gap-3">
-                <ShieldCheck className="mt-1 h-6 w-6 text-forest-700" aria-hidden="true" />
+                <ShieldCheck className="mt-1 h-6 w-6 text-amberTrust" aria-hidden="true" />
                 <div>
                   <p className="font-bold text-warm-900">Evidence before booking</p>
                   <p className="mt-1 text-sm leading-6 text-warm-600">

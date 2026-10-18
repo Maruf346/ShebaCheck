@@ -614,3 +614,5 @@ staticfiles/
 db_volume/
 node_modules/
 dist/
+stitch*/
+figma*/
