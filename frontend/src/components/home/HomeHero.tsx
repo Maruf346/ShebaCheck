@@ -4,13 +4,18 @@ import {
   Bookmark,
   CalendarDays,
   CheckCircle2,
-  ChevronDown,
   Navigation,
   Search,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import type { FormEvent } from "react";
 import { homeCategories, homeLocations } from "../../data/homeContent";
+import { HomeDropdown } from "./HomeDropdown";
+
+const locationOptions = homeLocations.map((area) => ({
+  value: area,
+  label: area,
+}));
 
 interface HomeHeroProps {
   category: string;
@@ -46,9 +51,9 @@ export function HomeHero({
     >
       <motion.div
         className="p-4 xs:p-6 md:p-8 lg:min-h-[528px] wide:p-10 rounded-3xl border border-white bg-white shadow-home-panel md:rounded-panel"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.3 }}
+        initial={{ opacity: 0, y: 18 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.45, ease: "easeOut" }}
       >
         <div className="flex flex-wrap items-center gap-2">
           <button
@@ -62,7 +67,7 @@ export function HomeHero({
         </div>
         <h1
           id="home-title"
-          className="mt-4 mb-3 max-w-[620px] text-[28px] leading-8 font-extrabold xs:mt-5 xs:mb-4 xs:text-4xl xs:leading-10 md:text-[46px] md:leading-[50px] lg:max-w-none lg:text-[40px] lg:leading-[44px] wide:text-[46px] wide:leading-[48px] [&_span]:text-brand-amber [&_span]:underline [&_span]:decoration-brand-yellow/50 [&_span]:decoration-wavy [&_span]:decoration-2 [&_span]:underline-offset-[6px]"
+          className="mt-4 mb-3 max-w-[620px] text-[28px] leading-8 font-extrabold xs:mt-5 xs:mb-4 xs:text-4xl xs:leading-10 md:text-[46px] md:leading-[50px] lg:max-w-none lg:text-[40px] lg:leading-[44px] wide:text-[46px] wide:leading-[48px] [&_span]:text-brand-amber"
         >
           Find skilled professionals <span>you can trust.</span>
         </h1>
@@ -76,7 +81,7 @@ export function HomeHero({
           role="search"
           onSubmit={onSearch}
         >
-          <label className="flex min-h-10 min-w-0 flex-1 basis-full items-center gap-2 pl-2 text-stone-400 focus-within:text-amber-700 md:min-h-9 md:basis-auto md:pl-3 lg:basis-full wide:min-h-0 wide:basis-auto [&_input]:w-full [&_input]:min-w-0 [&_input]:border-0 [&_input]:bg-transparent [&_input]:text-[13px] [&_input]:leading-5 [&_input]:font-medium [&_input]:text-stone-800 [&_input]:outline-none [&_input::placeholder]:text-stone-400">
+          <label className="flex min-h-10 min-w-0 flex-1 basis-full items-center gap-2 rounded-xl pl-2 text-stone-400 transition-[box-shadow,color] focus-within:text-amber-700 focus-within:ring-1 focus-within:ring-amber-500/25 md:min-h-9 md:basis-auto md:pl-3 lg:basis-full wide:min-h-0 wide:basis-auto [&_input]:w-full [&_input]:min-w-0 [&_input]:border-0 [&_input]:bg-transparent [&_input]:text-[13px] [&_input]:leading-5 [&_input]:font-medium [&_input]:text-stone-800 [&_input]:outline-none [&_input::placeholder]:text-stone-400">
             <Search size={21} aria-hidden="true" />
             <input
               aria-label="What service do you need?"
@@ -85,19 +90,15 @@ export function HomeHero({
               onChange={(event) => onQuery(event.target.value)}
             />
           </label>
-          <label className="flex min-h-[42px] min-w-0 flex-1 items-center gap-1.5 rounded-full border border-stone-200 bg-white p-2 text-brand-amber focus-within:border-amber-500 md:min-h-0 md:w-48 md:flex-initial md:px-3 md:py-[7px] lg:w-auto lg:flex-1 wide:w-48 wide:flex-initial [&_select]:w-full [&_select]:min-w-0 [&_select]:cursor-pointer [&_select]:appearance-none [&_select]:bg-transparent [&_select]:text-[11px] [&_select]:leading-4 [&_select]:font-bold [&_select]:text-stone-800 [&_select]:outline-none xs:[&_select]:text-xs [&>svg:last-child]:text-gray-400">
-            <Navigation size={16} aria-hidden="true" />
-            <select
-              aria-label="Service area"
-              value={location}
-              onChange={(event) => onLocation(event.target.value)}
-            >
-              {homeLocations.map((area) => (
-                <option key={area}>{area}</option>
-              ))}
-            </select>
-            <ChevronDown size={14} aria-hidden="true" />
-          </label>
+          <HomeDropdown
+            label="Service area"
+            value={location}
+            options={locationOptions}
+            onChange={onLocation}
+            icon={Navigation}
+            className="min-w-0 flex-1 md:w-48 md:flex-initial lg:w-auto lg:flex-1 wide:w-48 wide:flex-initial"
+            triggerClassName="min-h-[42px] rounded-[14px] px-2.5 py-2 md:rounded-full md:px-3 md:py-[7px] lg:rounded-[14px] wide:rounded-full"
+          />
           <button
             className="inline-flex shrink-0 items-center justify-center rounded-full border border-transparent font-bold transition-[background,box-shadow,transform] duration-[160ms] active:scale-[0.98] min-h-[42px] gap-1 px-2.5 py-2.5 text-[11px] leading-5 xs:gap-[7px] xs:px-3.5 xs:text-xs xs:leading-5 md:min-h-11 md:px-[22px] md:py-[11px] md:text-sm bg-brand-amber text-white shadow-home-button hover:bg-[#ed8f00] hover:shadow-home-button-hover"
             type="submit"
@@ -128,9 +129,9 @@ export function HomeHero({
       </motion.div>
       <motion.article
         className="relative flex min-h-[390px] min-w-0 flex-col justify-between overflow-hidden rounded-3xl border border-white/50 bg-home-featured p-6 text-white xs:p-7 md:min-h-[400px] md:rounded-panel md:p-8 lg:min-h-0 before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:bottom-1/2 before:bg-home-highlight before:content-[''] [&>*]:relative"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.4 }}
+        initial={{ opacity: 0, y: 18 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.08, ease: "easeOut" }}
         aria-labelledby="featured-service-title"
       >
         <div className="[&_h2]:text-[28px] [&_h2]:leading-[34px] [&_h2]:font-extrabold md:[&_h2]:text-3xl md:[&_h2]:leading-9 [&_p]:mt-1.5 [&_p]:max-w-[270px] [&_p]:text-sm [&_p]:leading-5 [&_p]:font-medium [&_p]:text-[#fff7d6] md:[&_p]:max-w-[400px] lg:[&_p]:max-w-[270px]">

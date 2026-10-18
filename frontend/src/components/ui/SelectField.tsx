@@ -1,3 +1,4 @@
+import { ChevronDown } from "lucide-react";
 import { useId, type SelectHTMLAttributes } from "react";
 
 interface SelectFieldProps extends SelectHTMLAttributes<HTMLSelectElement> {
@@ -22,15 +23,21 @@ export function SelectField({
       >
         {label}
       </label>
-      <select
-        id={selectId}
-        className={`focus-ring min-h-12 w-full rounded-xl border border-warm-200 bg-white px-3.5 text-sm text-warm-900 ${className}`}
-        {...props}
-      >
-        {options.map((option) => (
-          <option key={option}>{option}</option>
-        ))}
-      </select>
+      <div className="relative">
+        <select
+          id={selectId}
+          className={`focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-amber min-h-12 w-full cursor-pointer appearance-none rounded-xl border border-warm-200 bg-white py-3 pl-3.5 pr-10 text-sm text-warm-900 shadow-sm transition-[border-color,box-shadow] hover:border-amber-400 focus:border-brand-amber focus:ring-2 focus:ring-amber-100 ${className}`}
+          {...props}
+        >
+          {options.map((option) => (
+            <option key={option}>{option}</option>
+          ))}
+        </select>
+        <ChevronDown
+          className="pointer-events-none absolute right-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-warm-500"
+          aria-hidden="true"
+        />
+      </div>
     </div>
   );
 }

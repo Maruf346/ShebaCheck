@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from "react";
+import { motion } from "framer-motion";
 import {
   BadgeCheck,
   History,
@@ -23,6 +24,15 @@ import {
   type HomeDialogKind,
 } from "../../data/homeContent";
 import type { AppPage, Provider } from "../../types";
+
+const reveal = {
+  hidden: { opacity: 0, y: 18 },
+  visible: { opacity: 1, y: 0 },
+};
+const stagger = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.08 } },
+};
 
 interface CustomerHomeProps {
   setPage: (page: AppPage) => void;
@@ -112,7 +122,7 @@ export function CustomerHome({ setPage, onSelectProvider }: CustomerHomeProps) {
   const bookFeatured = () => onSelectProvider(featuredTechnician, "booking");
 
   return (
-    <div className="shebacheck-home relative min-h-screen overflow-hidden bg-home-canvas pt-3 pb-[calc(72px+env(safe-area-inset-bottom))] font-sans text-sm leading-[21px] tracking-normal text-brand-ink md:pt-4 md:pb-0 [&_*]:tracking-normal [&_svg]:shrink-0 motion-reduce:[&_*]:!transition-none motion-reduce:[&_*]:!animate-none [&_:is(button,a,input,select):focus-visible]:outline [&_:is(button,a,input,select):focus-visible]:outline-[3px] [&_:is(button,a,input,select):focus-visible]:outline-offset-4 [&_:is(button,a,input,select):focus-visible]:outline-forest-700 [&_button]:[-webkit-tap-highlight-color:transparent] [&_section[id]]:scroll-mt-[110px]">
+    <div className="shebacheck-home relative min-h-screen overflow-hidden bg-home-canvas pt-3 pb-[calc(72px+env(safe-area-inset-bottom))] font-sans text-sm leading-[21px] tracking-normal text-brand-ink md:pt-4 md:pb-0 [&_*]:tracking-normal [&_svg]:shrink-0 motion-reduce:[&_*]:!transition-none motion-reduce:[&_*]:!animate-none [&_:is(button,a,select):focus-visible]:outline [&_:is(button,a,select):focus-visible]:outline-[3px] [&_:is(button,a,select):focus-visible]:outline-offset-4 [&_:is(button,a,select):focus-visible]:outline-brand-amber [&_button]:[-webkit-tap-highlight-color:transparent] [&_section[id]]:scroll-mt-[110px]">
       <a
         className="fixed -top-20 left-4 z-[60] rounded-md bg-brand-ink px-[18px] py-3 text-white focus:top-3"
         href="#home-main"
@@ -150,9 +160,13 @@ export function CustomerHome({ setPage, onSelectProvider }: CustomerHomeProps) {
           onDemo={() => setDialog("demo")}
         />
 
-        <section
+        <motion.section
           className="grid grid-cols-2 gap-x-4 gap-y-5 px-5 py-6 md:gap-6 md:px-6 lg:grid-cols-4 lg:gap-0 wide:p-7 rounded-3xl border border-white bg-white shadow-home-panel md:rounded-panel"
           aria-label="Illustrative trust statistics"
+          variants={stagger}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.25 }}
         >
           {[
             {
@@ -176,11 +190,13 @@ export function CustomerHome({ setPage, onSelectProvider }: CustomerHomeProps) {
               detail: "Across 24,000+ Dhaka homes",
             },
           ].map(({ icon: Icon, title, detail }) => (
-            <button
+            <motion.button
               key={title}
               className="flex min-w-0 flex-col items-start gap-2.5 text-left md:flex-row md:items-center lg:border-r lg:border-stone-100 lg:px-2.5 lg:first:pl-0 lg:last:border-r-0 lg:last:pr-0 wide:gap-4 wide:px-4 [&_strong]:block [&_strong]:text-[13px] [&_strong]:leading-5 [&_strong]:font-bold md:[&_strong]:text-base md:[&_strong]:leading-6 lg:[&_strong]:text-[13px] lg:[&_strong]:leading-5 wide:[&_strong]:text-base wide:[&_strong]:leading-6"
               onClick={() => setDialog("demo")}
               title="About these demo statistics"
+              variants={reveal}
+              transition={{ duration: 0.35, ease: "easeOut" }}
             >
               <span className="grid size-10 shrink-0 place-items-center rounded-xl border border-amber-100 bg-amber-50 text-brand-amber md:size-12 lg:size-10 wide:size-12 wide:rounded-2xl">
                 <Icon size={24} aria-hidden="true" />
@@ -191,9 +207,9 @@ export function CustomerHome({ setPage, onSelectProvider }: CustomerHomeProps) {
                   {detail}
                 </span>
               </span>
-            </button>
+            </motion.button>
           ))}
-        </section>
+        </motion.section>
 
         <section
           className="flex flex-col gap-6"
@@ -243,16 +259,28 @@ export function CustomerHome({ setPage, onSelectProvider }: CustomerHomeProps) {
               <button onClick={resetFilters}>Clear search</button>
             </div>
           )}
-          <div className="grid grid-cols-1 gap-4 empty:hidden card-grid:grid-cols-2 md:gap-6 wide:grid-cols-4">
+          <motion.div
+            className="grid grid-cols-1 gap-4 empty:hidden card-grid:grid-cols-2 md:gap-6 wide:grid-cols-4"
+            variants={stagger}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.12 }}
+          >
             {filtered.map((technician) => (
-              <TechnicianCard
+              <motion.div
                 key={technician.id}
-                technician={technician}
-                onProfile={() => onSelectProvider(technician, "profile")}
-                onBook={() => onSelectProvider(technician, "booking")}
-              />
+                variants={reveal}
+                transition={{ duration: 0.35, ease: "easeOut" }}
+                className="min-w-0"
+              >
+                <TechnicianCard
+                  technician={technician}
+                  onProfile={() => onSelectProvider(technician, "profile")}
+                  onBook={() => onSelectProvider(technician, "booking")}
+                />
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
           {filtered.length === 0 && (
             <div
               className="flex flex-col items-center gap-4 px-6 py-10 text-center [&>svg]:text-amber-700 [&_h3]:text-xl [&_h3]:font-bold [&_p]:text-stone-500 rounded-3xl border border-white bg-white shadow-home-panel md:rounded-panel"
@@ -295,9 +323,14 @@ export function CustomerHome({ setPage, onSelectProvider }: CustomerHomeProps) {
           </div>
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-3 wide:gap-6">
             {protectionSteps.map(({ title, body, note, icon: Icon }, index) => (
-              <article
+              <motion.article
                 className="flex min-w-0 flex-col rounded-2xl border border-stone-200 bg-stone-50 p-5 lg:min-h-[270px] wide:p-6 [&_h3]:mb-2 [&_h3]:text-[17px] [&_h3]:leading-[26px] [&_h3]:font-bold [&>p]:max-w-[640px] [&>p]:text-sm [&>p]:leading-5 [&>p]:text-stone-600 lg:[&>p]:max-w-none"
                 key={title}
+                variants={reveal}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true, amount: 0.2 }}
+                transition={{ duration: 0.4, ease: "easeOut" }}
               >
                 <span className="mb-5 grid size-12 place-items-center rounded-full bg-brand-yellow text-lg leading-[27px] font-extrabold text-white shadow-[0_6px_16px_-2px_rgb(255_160_0/35%)]">
                   0{index + 1}
@@ -308,7 +341,7 @@ export function CustomerHome({ setPage, onSelectProvider }: CustomerHomeProps) {
                   <Icon size={17} aria-hidden="true" />
                   {note}
                 </span>
-              </article>
+              </motion.article>
             ))}
           </div>
         </section>
@@ -333,9 +366,14 @@ export function CustomerHome({ setPage, onSelectProvider }: CustomerHomeProps) {
           </div>
           <div className="grid grid-cols-1 gap-4 md:gap-6 lg:grid-cols-3">
             {homeTestimonials.map(({ name, initials, detail, quote }) => (
-              <figure
+              <motion.figure
                 className="m-0 flex flex-col p-6 lg:min-h-[313px] [&_blockquote]:mb-5 [&_blockquote]:text-sm [&_blockquote]:leading-[23px] [&_blockquote]:font-medium [&_blockquote]:italic [&_blockquote]:text-stone-600 [&_figcaption]:mt-auto [&_figcaption]:flex [&_figcaption]:items-center [&_figcaption]:gap-3 [&_figcaption]:border-t [&_figcaption]:border-stone-100 [&_figcaption]:pt-3.5 [&_figcaption_strong]:block [&_figcaption_strong]:text-[13px] [&_figcaption_strong]:leading-5 [&_figcaption_strong]:font-bold [&_figcaption>span:last-child>span]:block [&_figcaption>span:last-child>span]:text-[10px] [&_figcaption>span:last-child>span]:leading-[17px] [&_figcaption>span:last-child>span]:font-medium [&_figcaption>span:last-child>span]:text-stone-500 rounded-3xl border border-white bg-white shadow-home-panel md:rounded-panel"
                 key={name}
+                variants={reveal}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true, amount: 0.2 }}
+                transition={{ duration: 0.4, ease: "easeOut" }}
               >
                 <div
                   className="mb-3.5 flex items-center gap-[3px] text-brand-yellow"
@@ -360,7 +398,7 @@ export function CustomerHome({ setPage, onSelectProvider }: CustomerHomeProps) {
                     <span>{detail}</span>
                   </span>
                 </figcaption>
-              </figure>
+              </motion.figure>
             ))}
           </div>
         </section>

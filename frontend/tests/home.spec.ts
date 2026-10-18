@@ -81,9 +81,8 @@ test("category, zone, search, and empty state work together", async ({
     .click();
   await expect(page.locator(".home-technician")).toHaveCount(2);
   await page.getByLabel("What service do you need?").fill("AC");
-  await page
-    .getByLabel("Service area", { exact: true })
-    .selectOption("Gulshan 1 & 2");
+  await page.getByRole("combobox", { name: "Service area" }).click();
+  await page.getByRole("option", { name: "Gulshan 1 & 2" }).click();
   await page.getByRole("button", { name: "Find Pros" }).click();
   await expect(page.locator(".home-technician")).toHaveCount(1);
   await expect(page.locator(".home-search-feedback")).toContainText(

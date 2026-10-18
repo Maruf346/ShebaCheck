@@ -1,5 +1,5 @@
 import { AnimatePresence, motion, MotionConfig } from "framer-motion";
-import { useEffect, useState } from "react";
+import { Navigate, useLocation, useNavigate } from "react-router-dom";
 import { AppShell } from "./components/AppShell";
 import { AdminDashboard } from "./pages/admin/AdminDashboard";
 import { BookingFlow } from "./pages/customer/BookingFlow";
@@ -12,24 +12,25 @@ import type { AppPage, Provider } from "./types";
 import { providers } from "./data/mockData";
 import { featuredTechnician, homeTechnicians } from "./data/homeContent";
 
-const pages: AppPage[] = [
-  "home",
-  "search",
-  "profile",
-  "booking",
-  "customer-dashboard",
-  "provider-dashboard",
-  "admin-dashboard",
-];
+const pagePaths: Record<AppPage, string> = {
+  home: "/",
+  search: "/search",
+  profile: "/profile",
+  booking: "/booking",
+  "customer-dashboard": "/customer-dashboard",
+  "provider-dashboard": "/provider-dashboard",
+  "admin-dashboard": "/admin-dashboard",
+};
 
-function getPageFromHash(): AppPage {
-  const hash = window.location.hash.slice(1).split("?")[0] as AppPage;
-  return pages.includes(hash) ? hash : "home";
+function getPageFromPath(pathname: string): AppPage | null {
+  const page = (Object.entries(pagePaths) as [AppPage, string][]).find(
+    ([, path]) => path === pathname,
+  );
+  return page?.[0] ?? null;
 }
 
-function getProviderFromHash(): Provider {
-  const params = new URLSearchParams(window.location.hash.split("?")[1]);
-  const id = Number(params.get("provider"));
+function getProviderFromId(providerId: string | null): Provider {
+  const id = Number(providerId);
   return (
     [...providers, ...homeTechnicians, featuredTechnician].find(
       (provider) => provider.id === id,
@@ -38,29 +39,20 @@ function getProviderFromHash(): Provider {
 }
 
 export default function App() {
-  const [page, setPage] = useState<AppPage>(() => getPageFromHash());
-  const [selectedProvider, setSelectedProvider] =
-    useState<Provider>(getProviderFromHash);
-
-  useEffect(() => {
-    const handleHashChange = () => {
-      setPage(getPageFromHash());
-      setSelectedProvider(getProviderFromHash());
-    };
-    window.addEventListener("hashchange", handleHashChange);
-    window.addEventListener("popstate", handleHashChange);
-    return () => {
-      window.removeEventListener("hashchange", handleHashChange);
-      window.removeEventListener("popstate", handleHashChange);
-    };
-  }, []);
+  const location = useLocation();
+  const routerNavigate = useNavigate();
+  const page = getPageFromPath(location.pathname);
+  const selectedProvider = getProviderFromId(
+    new URLSearchParams(location.search).get("provider"),
+  );
 
   const navigate = (nextPage: AppPage, providerId = selectedProvider.id) => {
-    setPage(nextPage);
-    const nextHash = `#${nextPage}${nextPage === "profile" || nextPage === "booking" ? `?provider=${providerId}` : ""}`;
-    if (window.location.hash !== nextHash) {
-      window.history.pushState(null, "", nextHash);
-    }
+    const path = pagePaths[nextPage];
+    const search =
+      nextPage === "profile" || nextPage === "booking"
+        ? `?provider=${providerId}`
+        : "";
+    routerNavigate(`${path}${search}`);
     window.scrollTo({ top: 0, behavior: "instant" });
   };
 
@@ -68,7 +60,6 @@ export default function App() {
     provider: Provider,
     nextPage: "profile" | "booking",
   ) => {
-    setSelectedProvider(provider);
     navigate(nextPage, provider.id);
   };
 
@@ -97,6 +88,8 @@ export default function App() {
         );
     }
   };
+
+  if (!page) return <Navigate to="/" replace />;
 
   return (
     <MotionConfig reducedMotion="user">

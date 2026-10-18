@@ -1,8 +1,14 @@
-import { Bell, ChevronDown, MapPin, Menu, X } from "lucide-react";
+import { Bell, MapPin, Menu, X } from "lucide-react";
 import { useState } from "react";
 import { homeLocations } from "../../data/homeContent";
 import type { AppPage } from "../../types";
 import { HomeBrand } from "./HomeBrand";
+import { HomeDropdown } from "./HomeDropdown";
+
+const locationOptions = homeLocations.map((area) => ({
+  value: area,
+  label: area === "Gulshan 1 & 2" ? "Gulshan 1, Dhaka" : area,
+}));
 
 interface HomeHeaderProps {
   location: string;
@@ -61,21 +67,15 @@ export function HomeHeader({
           ))}
         </nav>
         <div className="ml-auto flex items-center gap-2 md:gap-3">
-          <label className="hidden items-center gap-1.5 rounded-full border border-stone-200 bg-stone-50 px-3 py-1.5 text-brand-amber md:flex lg:hidden wide:flex [&_select]:w-[100px] [&_select]:cursor-pointer [&_select]:appearance-none [&_select]:bg-transparent [&_select]:text-xs [&_select]:leading-4 [&_select]:font-bold [&_select]:text-stone-800 [&_select]:outline-none [&>svg:last-child]:text-stone-400">
-            <MapPin size={16} aria-hidden="true" />
-            <select
-              aria-label="Your Dhaka location"
-              value={location}
-              onChange={(event) => onLocationChange(event.target.value)}
-            >
-              {homeLocations.map((area) => (
-                <option key={area} value={area}>
-                  {area === "Gulshan 1 & 2" ? "Gulshan 1, Dhaka" : area}
-                </option>
-              ))}
-            </select>
-            <ChevronDown size={13} aria-hidden="true" />
-          </label>
+          <HomeDropdown
+            label="Your Dhaka location"
+            value={location}
+            options={locationOptions}
+            onChange={onLocationChange}
+            icon={MapPin}
+            className="hidden w-[190px] md:block lg:hidden wide:block"
+            triggerClassName="bg-stone-50 px-3 py-2"
+          />
           <button
             className="shrink-0 place-items-center rounded-full border border-stone-200 bg-stone-50 text-stone-600 transition-colors duration-[160ms] hover:bg-amber-100 size-9 relative hidden md:inline-grid"
             aria-label="Notifications"
