@@ -41,7 +41,8 @@ The homepage follows node `116:2` of the supplied **Plumbing and Fleet managemen
 
 - `src/components/home/`: reusable homepage components.
 - `src/pages/customer/CustomerHome.tsx`: homepage state and section composition.
-- `src/styles/home.css`: scoped Figma styling and responsive layouts.
+- Components use Tailwind utilities for layout, responsive breakpoints, and interactive states.
+- `tailwind.config.js`: shared brand colors, shadows, backgrounds, and layout tokens.
 - `src/data/homeContent.ts`: synthetic reference content and policy explanations.
 - `public/images/providers/`: the five original photos downloaded from the supplied design export.
 - Fonts are bundled locally, including a Bengali fallback for the taka symbol.

@@ -10,9 +10,9 @@ interface HomeFooterProps {
 
 export function HomeFooter({ onZone, onService, onDialog }: HomeFooterProps) {
   return (
-    <footer className="home-footer">
-      <div className="home-footer-inner">
-        <div className="home-footer-top">
+    <footer className="relative z-10 mt-6 border-t border-amber-500/20 bg-brand-footer text-stone-400 md:mt-[38px] [&_h3]:mb-3 [&_h3]:text-[11px] [&_h3]:leading-4 [&_h3]:font-bold [&_h3]:uppercase [&_h3]:text-brand-yellow md:[&_h3]:text-xs [&_button:hover]:text-amber-300">
+      <div className="mx-auto flex max-w-marketplace flex-col gap-8 px-6 pt-9 pb-12 md:gap-10 md:px-10 md:pt-12">
+        <div className="flex flex-col items-start justify-between gap-6 border-b border-white/10 pb-8 md:flex-row md:items-center [&>div>p]:mt-1.5 [&>div>p]:max-w-md [&>div>p]:text-xs [&>div>p]:leading-5 [&>div>p]:font-medium">
           <div>
             <HomeBrand footer />
             <p>
@@ -21,22 +21,22 @@ export function HomeFooter({ onZone, onService, onDialog }: HomeFooterProps) {
             </p>
           </div>
           <button
-            className="home-hotline"
+            className="flex items-center gap-4 rounded-2xl border border-brand-yellow/30 bg-white/[0.06] px-5 py-3 text-left [&_strong]:block [&_strong]:text-lg [&_strong]:leading-[27px] [&_strong]:font-extrabold [&_strong]:text-brand-yellow"
             onClick={() => onDialog("support")}
             aria-label="About the demo safety hotline"
           >
-            <span className="home-hotline-icon">
+            <span className="grid size-10 shrink-0 place-items-center rounded-full bg-brand-yellow text-stone-900">
               <Phone size={21} />
             </span>
             <span>
-              <span className="home-hotline-label">
+              <span className="block text-[11px] leading-[17px] font-bold uppercase text-[#b6a36e]">
                 Safety Hotline &amp; Dispatch
               </span>
               <strong>16216</strong>
             </span>
           </button>
         </div>
-        <div className="home-footer-columns">
+        <div className="grid grid-cols-2 gap-x-5 gap-y-7 md:gap-8 lg:grid-cols-4 [&_ul]:flex [&_ul]:flex-col [&_ul]:gap-2 [&_li]:text-[11px] [&_li]:leading-[18px] [&_li]:font-medium md:[&_li]:text-xs md:[&_li]:leading-4 [&_p]:text-[11px] [&_p]:leading-[18px] [&_p]:font-medium md:[&_p]:text-xs md:[&_p]:leading-5 [&_button]:text-left">
           <div>
             <h3>Dhaka Service Hubs</h3>
             <ul>
@@ -95,13 +95,13 @@ export function HomeFooter({ onZone, onService, onDialog }: HomeFooterProps) {
               Proposed National ID verification and payment integrations. No
               partner services are connected in this demo.
             </p>
-            <div className="home-partner-badges">
+            <div className="mt-3 flex flex-wrap gap-2 [&_span]:rounded-full [&_span]:border [&_span]:border-brand-yellow/30 [&_span]:bg-white/10 [&_span]:px-2.5 [&_span]:py-1 [&_span]:text-[11px] [&_span]:leading-[17px] [&_span]:font-bold [&_span]:text-amber-200">
               <span>NID Verified</span>
               <span>bKash Escrow</span>
             </div>
           </div>
         </div>
-        <div className="home-footer-bottom">
+        <div className="flex flex-col items-start justify-between gap-4 border-t border-white/10 pt-6 text-[10px] leading-4 font-medium md:text-[11px] wide:flex-row wide:items-center [&>div]:flex [&>div]:flex-wrap [&>div]:items-center [&>div]:gap-2.5 md:[&>div]:gap-4">
           <p>
             &copy; 2025 ShebaCheck Bangladesh. All rights reserved. Demo
             technician marketplace.

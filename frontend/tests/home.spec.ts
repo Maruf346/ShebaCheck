@@ -3,7 +3,10 @@ import { expect, test } from "@playwright/test";
 for (const [name, width, height] of [
   ["figma-desktop", 1280, 900],
   ["wide-desktop", 1920, 1080],
+  ["desktop-breakpoint", 1200, 900],
+  ["small-desktop", 1024, 900],
   ["tablet", 768, 1024],
+  ["small-tablet", 600, 900],
   ["mobile", 390, 844],
   ["small-mobile", 320, 740],
 ] as const) {
