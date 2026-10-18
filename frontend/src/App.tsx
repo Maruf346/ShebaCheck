@@ -76,7 +76,7 @@ export default function App() {
           <BookingFlow key={selectedProvider.id} provider={selectedProvider} />
         );
       case "customer-dashboard":
-        return <CustomerDashboard />;
+        return <CustomerDashboard onSelectProvider={selectProvider} />;
       case "provider-dashboard":
         return <ProviderDashboard />;
       case "admin-dashboard":

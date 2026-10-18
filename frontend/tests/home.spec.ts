@@ -113,7 +113,11 @@ test("save persists and dialogs restore focus", async ({ page }) => {
       exact: true,
     }),
   ).toBeFocused();
-  await page.getByRole("button", { name: "Demo data", exact: true }).click();
+  await page
+    .getByRole("button", {
+      name: "Bangladesh's First 100% NID-Verified Home Platform",
+    })
+    .click();
   await expect(page.getByRole("dialog")).toContainText(
     "illustrative demo data",
   );

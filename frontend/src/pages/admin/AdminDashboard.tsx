@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { AlertTriangle, BarChart3, CalendarCheck, FileCheck2, Gauge, MessageSquareWarning, ShieldQuestion, Users, Wrench } from "lucide-react";
 import { adminCases } from "../../data/mockData";
 import { DashboardShell } from "../../components/DashboardShell";
@@ -7,24 +8,26 @@ import { Card } from "../../components/ui/Card";
 import { StatCard } from "../../components/ui/StatCard";
 
 const nav = [
-  { label: "Overview", icon: Gauge },
-  { label: "Users", icon: Users },
-  { label: "Providers", icon: Wrench },
-  { label: "Verification", icon: FileCheck2 },
-  { label: "Bookings", icon: CalendarCheck },
-  { label: "Reviews", icon: MessageSquareWarning },
-  { label: "Disputes", icon: ShieldQuestion },
-  { label: "ML Monitoring", icon: BarChart3 }
+  { label: "Overview", icon: Gauge, target: "admin-overview" },
+  { label: "Users", icon: Users, target: "admin-review-queue" },
+  { label: "Providers", icon: Wrench, target: "admin-provider-ops" },
+  { label: "Verification", icon: FileCheck2, target: "admin-verification" },
+  { label: "Bookings", icon: CalendarCheck, target: "admin-trends" },
+  { label: "Reviews", icon: MessageSquareWarning, target: "admin-review-queue" },
+  { label: "Disputes", icon: ShieldQuestion, target: "admin-disputes" },
+  { label: "ML Monitoring", icon: BarChart3, target: "admin-ml" }
 ];
 
 export function AdminDashboard() {
+  const [reviewedCases, setReviewedCases] = useState<string[]>([]);
+
   return (
     <DashboardShell title="Admin dashboard" subtitle="Operational controls, review quality, verification, disputes, and ML model health." nav={nav} admin>
-      <div className="mb-5 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm font-semibold text-amber-900">
+      <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 font-semibold text-amber-900">
         All statistics, verification states, and ML predictions on this screen are illustrative demo data.
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 sm:gap-5 xl:grid-cols-4">
+      <div id="admin-overview" className="grid scroll-mt-28 gap-4 sm:grid-cols-2 sm:gap-5 xl:grid-cols-4">
         <StatCard admin label="Providers" value="1,284" detail="demo active records" icon={Wrench} />
         <StatCard admin label="Bookings" value="8,742" detail="demo lifetime total" icon={CalendarCheck} />
         <StatCard admin label="Pending verification" value="93" detail="needs ops review" icon={FileCheck2} />
@@ -32,9 +35,9 @@ export function AdminDashboard() {
       </div>
 
       <div className="mt-6 grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
-        <Card className="p-6">
-          <h2 className="text-xl font-bold text-warm-900">Booking trends and cancellation rates</h2>
-          <div className="mt-6 flex h-64 items-end gap-3 rounded-2xl border border-warm-200 bg-warm-50 p-4">
+        <Card id="admin-trends" className="scroll-mt-28 p-4 sm:p-6">
+          <h2 className="text-lg font-bold text-warm-900 sm:text-xl">Booking trends and cancellation rates</h2>
+          <div className="mt-5 flex h-52 items-end gap-2 rounded-2xl border border-warm-200 bg-warm-50 p-3 sm:mt-6 sm:h-64 sm:gap-3 sm:p-4">
             {[52, 68, 61, 82, 76, 91, 88, 95].map((height, index) => (
               <div key={index} className="flex flex-1 flex-col items-center gap-2">
                 <div className="w-full rounded-t-lg bg-brand-amber" style={{ height: `${height}%` }} />
@@ -49,8 +52,8 @@ export function AdminDashboard() {
           </div>
         </Card>
 
-        <Card className="p-6">
-          <h2 className="text-xl font-bold text-warm-900">ML performance panel</h2>
+        <Card id="admin-ml" className="scroll-mt-28 p-4 sm:p-6">
+          <h2 className="text-lg font-bold text-warm-900 sm:text-xl">ML performance panel</h2>
           <p className="mt-1 text-sm text-warm-500">Model version: review-risk-demo-v0.3</p>
           <div className="mt-5 grid gap-4">
             {[
@@ -73,9 +76,9 @@ export function AdminDashboard() {
         </Card>
       </div>
 
-      <Card className="mt-6 overflow-hidden">
+      <Card id="admin-review-queue" className="scroll-mt-28 overflow-hidden">
         <div className="border-b border-warm-200 p-5">
-          <h2 className="text-xl font-bold text-warm-900">Suspicious review activity</h2>
+          <h2 className="text-lg font-bold text-warm-900 sm:text-xl">Suspicious review activity</h2>
           <p className="mt-1 text-sm text-warm-500">Risk indicators are demo signals for operator review, not automatic enforcement.</p>
         </div>
         <div className="overflow-x-auto">
@@ -99,7 +102,9 @@ export function AdminDashboard() {
                   <td className="px-5 py-4">{caseItem.reason}</td>
                   <td className="px-5 py-4 font-semibold text-amber-800">{caseItem.evidence}</td>
                   <td className="px-5 py-4">
-                    <Button variant="secondary">Review Case</Button>
+                    <Button variant={reviewedCases.includes(caseItem.id) ? "ghost" : "secondary"} disabled={reviewedCases.includes(caseItem.id)} onClick={() => setReviewedCases((current) => [...current, caseItem.id])}>
+                      {reviewedCases.includes(caseItem.id) ? "Reviewed" : "Mark reviewed"}
+                    </Button>
                   </td>
                 </tr>
               ))}
@@ -109,8 +114,9 @@ export function AdminDashboard() {
       </Card>
 
       <div className="mt-6 grid gap-6 lg:grid-cols-2">
-        <OpsPanel title="Verification management" items={["14 NID checks awaiting manual review", "8 portfolio submissions need evidence quality check", "5 provider reference calls scheduled"]} />
-        <OpsPanel title="Dispute management" items={["3 booking disputes awaiting provider response", "2 refund recommendations in review", "11 closed cases this week in demo data"]} />
+        <OpsPanel id="admin-verification" title="Verification management" items={["14 NID checks awaiting manual review", "8 portfolio submissions need evidence quality check", "5 provider reference calls scheduled"]} />
+        <OpsPanel id="admin-disputes" title="Dispute management" items={["3 booking disputes awaiting provider response", "2 refund recommendations in review", "11 closed cases this week in demo data"]} />
+        <OpsPanel id="admin-provider-ops" title="Provider operations" items={["Provider records are demo data", "Identity status requires a separate human review", "No automatic enforcement action is enabled"]} />
       </div>
     </DashboardShell>
   );
@@ -125,10 +131,10 @@ function MiniMetric({ label, value }: { label: string; value: string }) {
   );
 }
 
-function OpsPanel({ title, items }: { title: string; items: string[] }) {
+function OpsPanel({ id, title, items }: { id: string; title: string; items: string[] }) {
   return (
-    <Card className="p-6">
-      <h2 className="text-xl font-bold text-warm-900">{title}</h2>
+    <Card id={id} className="scroll-mt-28 p-4 sm:p-6">
+      <h2 className="text-lg font-bold text-warm-900 sm:text-xl">{title}</h2>
       <div className="mt-4 grid gap-3">
         {items.map((item) => (
           <div key={item} className="rounded-xl border border-warm-200 bg-warm-50 p-3 text-sm font-semibold text-warm-700">

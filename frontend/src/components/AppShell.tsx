@@ -81,7 +81,7 @@ export function AppShell({
           </div>
 
           <button
-            className="ml-auto hidden min-h-[34px] shrink-0 items-center gap-[7px] rounded-full bg-brand-ink px-[13px] py-2 text-[11px] font-bold leading-4 text-brand-yellow shadow-[0_2px_5px_rgb(17_24_39/15%)] transition hover:bg-black xs:inline-flex lg:hidden md:px-5 md:text-xs"
+            className="hidden min-h-[34px] shrink-0 items-center gap-[7px] rounded-full bg-brand-ink px-[13px] py-2 text-[11px] font-bold leading-4 text-brand-yellow shadow-[0_2px_5px_rgb(17_24_39/15%)] transition hover:bg-black xs:inline-flex lg:hidden md:px-5 md:text-xs"
             onClick={() => setPage("booking")}
           >
             <CalendarDays className="h-4 w-4" aria-hidden="true" />

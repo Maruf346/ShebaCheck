@@ -52,6 +52,14 @@ img {
   @apply focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-500;
 }
 
+.scrollbar-none {
+  scrollbar-width: none;
+}
+
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
 .surface {
   @apply rounded-2xl border border-warm-200 bg-white shadow-soft;
 }
