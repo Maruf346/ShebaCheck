@@ -22,6 +22,8 @@ export function AppShell({
   const [open, setOpen] = useState(false);
   const isAdmin = page === "admin-dashboard" || page === "provider-dashboard";
 
+  if (page === "home") return <>{children}</>;
+
   return (
     <div className={isAdmin ? "min-h-screen bg-slate-50" : "min-h-screen bg-warm-50"}>
       <header className={`${isAdmin ? "border-slate-200 bg-white" : "border-warm-200 bg-white/95"} sticky top-0 z-50 border-b backdrop-blur`}>

@@ -1,12 +1,12 @@
 import { Filter, SlidersHorizontal } from "lucide-react";
 import { providers } from "../../data/mockData";
-import type { AppPage } from "../../types";
+import type { Provider } from "../../types";
 import { ProviderCard } from "../../components/ProviderCard";
 import { Button } from "../../components/ui/Button";
 import { Card } from "../../components/ui/Card";
 import { SelectField } from "../../components/ui/SelectField";
 
-export function SearchResults({ setPage }: { setPage: (page: AppPage) => void }) {
+export function SearchResults({ onSelectProvider }: { onSelectProvider: (provider: Provider, page: "profile" | "booking") => void }) {
   return (
     <main className="mx-auto grid max-w-7xl gap-6 px-4 py-8 sm:px-6 lg:grid-cols-[280px_1fr] lg:px-8">
       <aside className="surface h-fit p-5">
@@ -39,7 +39,7 @@ export function SearchResults({ setPage }: { setPage: (page: AppPage) => void })
 
         <div className="mt-6 grid gap-5">
           {providers.map((provider) => (
-            <ProviderCard key={provider.id} provider={provider} onProfile={() => setPage("profile")} onBook={() => setPage("booking")} />
+            <ProviderCard key={provider.id} provider={provider} onProfile={() => onSelectProvider(provider, "profile")} onBook={() => onSelectProvider(provider, "booking")} />
           ))}
         </div>
 

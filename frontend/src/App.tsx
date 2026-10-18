@@ -1,4 +1,4 @@
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion, MotionConfig } from "framer-motion";
 import { useEffect, useState } from "react";
 import { AppShell } from "./components/AppShell";
 import { AdminDashboard } from "./pages/admin/AdminDashboard";
@@ -8,7 +8,9 @@ import { CustomerHome } from "./pages/customer/CustomerHome";
 import { ProviderProfile } from "./pages/customer/ProviderProfile";
 import { SearchResults } from "./pages/customer/SearchResults";
 import { ProviderDashboard } from "./pages/provider/ProviderDashboard";
-import type { AppPage } from "./types";
+import type { AppPage, Provider } from "./types";
+import { providers } from "./data/mockData";
+import { featuredTechnician, homeTechnicians } from "./data/homeContent";
 
 const pages: AppPage[] = [
   "home",
@@ -17,19 +19,34 @@ const pages: AppPage[] = [
   "booking",
   "customer-dashboard",
   "provider-dashboard",
-  "admin-dashboard"
+  "admin-dashboard",
 ];
 
 function getPageFromHash(): AppPage {
-  const hash = window.location.hash.replace("#", "") as AppPage;
+  const hash = window.location.hash.slice(1).split("?")[0] as AppPage;
   return pages.includes(hash) ? hash : "home";
+}
+
+function getProviderFromHash(): Provider {
+  const params = new URLSearchParams(window.location.hash.split("?")[1]);
+  const id = Number(params.get("provider"));
+  return (
+    [...providers, ...homeTechnicians, featuredTechnician].find(
+      (provider) => provider.id === id,
+    ) ?? providers[0]
+  );
 }
 
 export default function App() {
   const [page, setPage] = useState<AppPage>(() => getPageFromHash());
+  const [selectedProvider, setSelectedProvider] =
+    useState<Provider>(getProviderFromHash);
 
   useEffect(() => {
-    const handleHashChange = () => setPage(getPageFromHash());
+    const handleHashChange = () => {
+      setPage(getPageFromHash());
+      setSelectedProvider(getProviderFromHash());
+    };
     window.addEventListener("hashchange", handleHashChange);
     window.addEventListener("popstate", handleHashChange);
     return () => {
@@ -38,23 +55,35 @@ export default function App() {
     };
   }, []);
 
-  const navigate = (nextPage: AppPage) => {
+  const navigate = (nextPage: AppPage, providerId = selectedProvider.id) => {
     setPage(nextPage);
-    const nextHash = `#${nextPage}`;
+    const nextHash = `#${nextPage}${nextPage === "profile" || nextPage === "booking" ? `?provider=${providerId}` : ""}`;
     if (window.location.hash !== nextHash) {
       window.history.pushState(null, "", nextHash);
     }
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    window.scrollTo({ top: 0, behavior: "instant" });
+  };
+
+  const selectProvider = (
+    provider: Provider,
+    nextPage: "profile" | "booking",
+  ) => {
+    setSelectedProvider(provider);
+    navigate(nextPage, provider.id);
   };
 
   const renderPage = () => {
     switch (page) {
       case "search":
-        return <SearchResults setPage={navigate} />;
+        return <SearchResults onSelectProvider={selectProvider} />;
       case "profile":
-        return <ProviderProfile setPage={navigate} />;
+        return (
+          <ProviderProfile setPage={navigate} provider={selectedProvider} />
+        );
       case "booking":
-        return <BookingFlow />;
+        return (
+          <BookingFlow key={selectedProvider.id} provider={selectedProvider} />
+        );
       case "customer-dashboard":
         return <CustomerDashboard />;
       case "provider-dashboard":
@@ -63,23 +92,27 @@ export default function App() {
         return <AdminDashboard />;
       case "home":
       default:
-        return <CustomerHome setPage={navigate} />;
+        return (
+          <CustomerHome setPage={navigate} onSelectProvider={selectProvider} />
+        );
     }
   };
 
   return (
-    <AppShell page={page} setPage={navigate}>
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={page}
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -8 }}
-          transition={{ duration: 0.2 }}
-        >
-          {renderPage()}
-        </motion.div>
-      </AnimatePresence>
-    </AppShell>
+    <MotionConfig reducedMotion="user">
+      <AppShell page={page} setPage={navigate}>
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={page}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+          >
+            {renderPage()}
+          </motion.div>
+        </AnimatePresence>
+      </AppShell>
+    </MotionConfig>
   );
 }

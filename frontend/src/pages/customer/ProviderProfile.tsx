@@ -1,14 +1,14 @@
 import { BarChart3, CalendarCheck, Clock3, ShieldCheck, Star } from "lucide-react";
-import { providers, servicePrices, trustExplainers } from "../../data/mockData";
-import type { AppPage } from "../../types";
+import { trustExplainers } from "../../data/mockData";
+import { getBookingServices } from "../../data/bookingServices";
+import type { AppPage, Provider } from "../../types";
 import { Badge } from "../../components/ui/Badge";
 import { Button } from "../../components/ui/Button";
 import { Card } from "../../components/ui/Card";
 import { SectionHeading } from "../../components/ui/SectionHeading";
 
-const provider = providers[0];
-
-export function ProviderProfile({ setPage }: { setPage: (page: AppPage) => void }) {
+export function ProviderProfile({ setPage, provider }: { setPage: (page: AppPage) => void; provider: Provider }) {
+  const servicePrices = getBookingServices(provider).map((service) => ({ ...service, price: `\u09f3${service.price}`, note: "Starting estimate. Parts quoted separately; demo pricing." }));
   return (
     <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
       <Card className="overflow-hidden">
@@ -26,12 +26,12 @@ export function ProviderProfile({ setPage }: { setPage: (page: AppPage) => void 
             <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
               <Metric icon={Star} label="Rating" value={`${provider.rating}/5`} detail={`${provider.reviews} reviews`} />
               <Metric icon={CalendarCheck} label="Completed" value={`${provider.completedJobs}`} detail="demo bookings" />
-              <Metric icon={Clock3} label="Response" value="12 min" detail="median demo time" />
+              <Metric icon={Clock3} label="Response" value={provider.responseTime.replace("Usually replies in ", "")} detail="median demo time" />
               <Metric icon={BarChart3} label="Cancellation" value={`${provider.cancellationRate}%`} detail="accepted jobs" />
             </div>
             <div className="mt-5 flex flex-wrap gap-2">
-              <Badge tone="success">Verified identity</Badge>
-              <Badge tone="info">Mirpur service area</Badge>
+              <Badge tone={provider.verifiedIdentity ? "success" : "neutral"}>{provider.verifiedIdentity ? "Demo verified identity" : "Identity check pending"}</Badge>
+              <Badge tone="info">{provider.area} service area</Badge>
               <Badge tone="neutral">Starts from ৳{provider.startingPrice}</Badge>
             </div>
           </div>
@@ -70,7 +70,7 @@ export function ProviderProfile({ setPage }: { setPage: (page: AppPage) => void 
           <Card className="p-6">
             <SectionHeading title="Verified customer reviews" body="Only completed bookings can create reviews in the intended product flow." />
             <div className="mt-5 grid gap-4">
-              {["Professional, clean work and explained the breaker issue clearly.", "Arrived within the appointment window and gave a written parts estimate."].map((review, index) => (
+              {["Professional, clean work and explained the issue clearly.", "Arrived within the appointment window and gave a written parts estimate."].map((review, index) => (
                 <div key={review} className="rounded-xl border border-warm-200 p-4">
                   <div className="flex items-center justify-between gap-3">
                     <p className="font-bold text-warm-900">{["Farhana Akter", "Tanim Rahman"][index]}</p>

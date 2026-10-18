@@ -1,175 +1,406 @@
-import { CalendarCheck, CheckCircle2, MapPin, Search, ShieldCheck, Star, UsersRound } from "lucide-react";
-import { motion } from "framer-motion";
-import { categories, providers } from "../../data/mockData";
-import type { AppPage } from "../../types";
-import { ProviderCard } from "../../components/ProviderCard";
-import { Button } from "../../components/ui/Button";
-import { Card } from "../../components/ui/Card";
-import { InputField } from "../../components/ui/InputField";
-import { SectionHeading } from "../../components/ui/SectionHeading";
+import { useState, type FormEvent } from "react";
+import {
+  BadgeCheck,
+  History,
+  SearchX,
+  ShieldCheck,
+  Star,
+  ThumbsUp,
+} from "lucide-react";
+import { HomeDialog } from "../../components/home/HomeDialog";
+import { HomeFooter } from "../../components/home/HomeFooter";
+import { HomeHeader } from "../../components/home/HomeHeader";
+import { HomeHero } from "../../components/home/HomeHero";
+import { HomeMobileNav } from "../../components/home/HomeMobileNav";
+import { TechnicianCard } from "../../components/home/TechnicianCard";
+import {
+  featuredTechnician,
+  homeTechnicians,
+  homeTestimonials,
+  homeZones,
+  locationZones,
+  protectionSteps,
+  type HomeDialogKind,
+} from "../../data/homeContent";
+import type { AppPage, Provider } from "../../types";
+import "../../styles/home.css";
 
-export function CustomerHome({ setPage }: { setPage: (page: AppPage) => void }) {
+interface CustomerHomeProps {
+  setPage: (page: AppPage) => void;
+  onSelectProvider: (provider: Provider, page: "profile" | "booking") => void;
+}
+
+function getSavedService() {
+  try {
+    return localStorage.getItem("shebacheck:featured-saved") === "true";
+  } catch {
+    return false;
+  }
+}
+
+export function CustomerHome({ setPage, onSelectProvider }: CustomerHomeProps) {
+  const [category, setCategory] = useState("All");
+  const [zone, setZone] = useState("All Zones");
+  const [location, setLocation] = useState("Gulshan 1 & 2");
+  const [query, setQuery] = useState("");
+  const [submittedQuery, setSubmittedQuery] = useState("");
+  const [hasSearched, setHasSearched] = useState(false);
+  const [saved, setSaved] = useState(getSavedService);
+  const [announcement, setAnnouncement] = useState("");
+  const [dialog, setDialog] = useState<HomeDialogKind | null>(null);
+
+  const filtered = homeTechnicians.filter((technician) => {
+    const words =
+      `${technician.name} ${technician.category} ${technician.specialty} ${technician.serviceLabel} ${technician.bio}`
+        .toLowerCase()
+        .split(/[^\p{L}\p{N}]+/u);
+    const queryMatch = submittedQuery
+      .toLowerCase()
+      .split(/\s+/)
+      .filter(Boolean)
+      .every((term) =>
+        words.some(
+          (word) => word === term || (term.length > 2 && word.startsWith(term)),
+        ),
+      );
+    return (
+      (category === "All" || technician.category === category) &&
+      (zone === "All Zones" || technician.zones.includes(zone)) &&
+      queryMatch
+    );
+  });
+
+  function scrollToSection(id: string) {
+    document
+      .getElementById(id)
+      ?.scrollIntoView({
+        behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
+          ? "instant"
+          : "smooth",
+        block: "start",
+      });
+  }
+
+  function search(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setSubmittedQuery(query.trim());
+    setZone(locationZones[location] ?? "All Zones");
+    setHasSearched(true);
+    scrollToSection("services");
+  }
+
+  function resetFilters() {
+    setCategory("All");
+    setZone("All Zones");
+    setQuery("");
+    setSubmittedQuery("");
+    setHasSearched(false);
+  }
+
+  function toggleSaved() {
+    const nextSaved = !saved;
+    setSaved(nextSaved);
+    try {
+      localStorage.setItem("shebacheck:featured-saved", String(nextSaved));
+    } catch {
+      /* Keep the selection for this visit when storage is disabled. */
+    }
+    setAnnouncement(
+      nextSaved
+        ? "Service saved for later."
+        : "Service removed from saved items.",
+    );
+  }
+
+  const bookFeatured = () => onSelectProvider(featuredTechnician, "booking");
+
   return (
-    <main>
-      <section className="relative overflow-hidden bg-[linear-gradient(145deg,#ffbf1a_0%,#f5a30b_48%,#f47d20_100%)]">
-        <div className="pointer-events-none absolute left-[10%] top-[-18%] h-[520px] w-[520px] rounded-full bg-white/25 blur-3xl" />
-        <div className="pointer-events-none absolute bottom-[-22%] right-[-8%] h-[420px] w-[420px] rounded-full bg-forest-900/15 blur-3xl" />
-        <div className="mx-auto grid max-w-7xl gap-10 px-4 py-14 sm:px-6 md:py-20 lg:grid-cols-[1.05fr_0.95fr] lg:px-8">
-          <motion.div
-            className="relative rounded-[1.75rem] border border-white/80 bg-white p-6 shadow-soft md:p-9"
-            initial={{ opacity: 0, y: 18 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.45 }}
-          >
-            <p className="inline-flex rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-sm font-bold text-amber-900">
-              Bangladesh-focused verified home services
-            </p>
-            <h1 className="mt-5 max-w-3xl text-4xl font-bold leading-tight text-warm-900 md:text-5xl">
-              Find skilled professionals you can trust.
-            </h1>
-            <p className="mt-5 max-w-2xl text-lg leading-8 text-warm-700">
-              Compare NID-style verification signals, work history, booking completion, customer reviews, and cancellation patterns before you invite someone into your home.
-            </p>
+    <div className="shebacheck-home">
+      <a
+        className="home-skip-link"
+        href="#home-main"
+        onClick={(event) => {
+          event.preventDefault();
+          document.getElementById("home-main")?.focus();
+        }}
+      >
+        Skip to content
+      </a>
+      <HomeHeader
+        location={location}
+        onLocationChange={setLocation}
+        onSection={scrollToSection}
+        onNotifications={() => setDialog("notifications")}
+        onBook={bookFeatured}
+        setPage={setPage}
+      />
+      <main id="home-main" className="home-main" tabIndex={-1}>
+        <HomeHero
+          category={category}
+          location={location}
+          query={query}
+          saved={saved}
+          onCategory={setCategory}
+          onLocation={setLocation}
+          onQuery={setQuery}
+          onSearch={search}
+          onBook={bookFeatured}
+          onSave={toggleSaved}
+          onDemo={() => setDialog("demo")}
+        />
 
-            <Card className="mt-8 border-warm-100 p-3 shadow-sm">
-              <div className="grid gap-3 md:grid-cols-[1fr_1fr_auto]">
-                <InputField label="Service" placeholder="Electrical, plumbing, cleaning" />
-                <InputField label="Location" placeholder="Mirpur, Dhanmondi, Uttara" />
-                <Button className="self-end bg-warm-900 text-amber-300 hover:bg-black" icon={<Search className="h-4 w-4" />} onClick={() => setPage("search")}>
-                  Search
-                </Button>
-              </div>
-            </Card>
-
-            <div className="mt-7 grid gap-3 sm:grid-cols-3">
-              {[
-                ["NID", "verification-ready UI"],
-                ["4.8/5", "average demo rating"],
-                ["7 day", "warranty policy placeholder"]
-              ].map(([value, label]) => (
-                <div key={label} className="rounded-xl border border-amber-100 bg-amber-50 px-4 py-3">
-                  <p className="text-xl font-bold text-warm-900">{value}</p>
-                  <p className="text-xs font-semibold text-warm-500">{label}</p>
-                </div>
-              ))}
-            </div>
-          </motion.div>
-
-          <div className="relative min-h-[420px]">
-            <img
-              src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80"
-              alt="Bright Dhaka apartment living room ready for home service"
-              className="h-full min-h-[420px] w-full rounded-[1.75rem] border border-white/60 object-cover shadow-soft"
-            />
-            <div className="absolute bottom-4 left-4 right-4 rounded-2xl border border-white/70 bg-white/95 p-4 shadow-soft">
-              <div className="flex items-start gap-3">
-                <ShieldCheck className="mt-1 h-6 w-6 text-amberTrust" aria-hidden="true" />
-                <div>
-                  <p className="font-bold text-warm-900">Evidence before booking</p>
-                  <p className="mt-1 text-sm leading-6 text-warm-600">
-                    Verification labels, job history, and review eligibility are shown separately so customers can make a careful choice.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-        <SectionHeading title="Popular categories" body="Browse the most requested services in Dhaka with checked work histories and transparent price ranges." />
-        <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-          {categories.map((category) => (
+        <section
+          className="home-trust-ribbon home-white-panel"
+          aria-label="Illustrative trust statistics"
+        >
+          {[
+            {
+              icon: ShieldCheck,
+              title: "100% NID Checked",
+              detail: "Govt NID & criminal screened",
+            },
+            {
+              icon: ThumbsUp,
+              title: "0.9% Low Cancel",
+              detail: "Guaranteed arrival timing",
+            },
+            {
+              icon: History,
+              title: "\u09f30 Advance Escrow",
+              detail: "Pay only after job approved",
+            },
+            {
+              icon: BadgeCheck,
+              title: "4.9 / 5.0 Rating",
+              detail: "Across 24,000+ Dhaka homes",
+            },
+          ].map(({ icon: Icon, title, detail }) => (
             <button
-              key={category.label}
-              className="focus-ring rounded-2xl border border-warm-200 bg-white p-5 text-left shadow-sm transition hover:-translate-y-0.5 hover:border-forest-200"
-              onClick={() => setPage("search")}
+              key={title}
+              className="home-trust-metric"
+              onClick={() => setDialog("demo")}
+              title="About these demo statistics"
             >
-              <category.icon className="h-7 w-7 text-forest-700" aria-hidden="true" />
-              <p className="mt-4 font-bold text-warm-900">{category.label}</p>
-              <p className="mt-1 text-sm text-warm-500">{category.jobs}</p>
+              <span className="home-metric-icon">
+                <Icon size={24} aria-hidden="true" />
+              </span>
+              <span>
+                <strong>{title}</strong>
+                <span className="home-metric-detail">{detail}</span>
+              </span>
             </button>
           ))}
-        </div>
-      </section>
+        </section>
 
-      <section className="bg-white py-12">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
-            <SectionHeading title="Recommended providers" body="Synthetic demo providers using Bangladeshi locations, prices, and trust indicators." />
-            <Button variant="secondary" onClick={() => setPage("search")}>
-              View all providers
-            </Button>
+        <section
+          className="home-services-section"
+          id="services"
+          aria-labelledby="home-services-title"
+        >
+          <div className="home-section-heading home-white-panel">
+            <div>
+              <p className="home-eyebrow">
+                <span className="home-status-dot" />
+                Top Rated in Your Zone
+              </p>
+              <h2 id="home-services-title">
+                Verified Technicians Available Today
+              </h2>
+              <p className="home-section-description">
+                Biometric NID registered and upfront locked BDT pricing.
+              </p>
+            </div>
+            <div
+              className="home-zone-pills"
+              aria-label="Filter providers by area"
+            >
+              {homeZones.map((area) => (
+                <button
+                  key={area}
+                  className={`home-pill${zone === area ? " is-active" : ""}`}
+                  aria-pressed={zone === area}
+                  onClick={() => setZone(area)}
+                >
+                  {area}
+                </button>
+              ))}
+            </div>
           </div>
-          <div className="mt-7 grid gap-5 lg:grid-cols-2">
-            {providers.slice(0, 2).map((provider) => (
-              <ProviderCard key={provider.id} provider={provider} onProfile={() => setPage("profile")} onBook={() => setPage("booking")} compact />
+          {hasSearched && (
+            <div className="home-search-feedback" role="status">
+              <p>
+                {filtered.length} demo{" "}
+                {filtered.length === 1 ? "professional" : "professionals"}
+                {submittedQuery ? ` matching "${submittedQuery}"` : ""} in{" "}
+                {zone === "All Zones" ? "Dhaka" : zone}.
+              </p>
+              <button onClick={resetFilters}>Clear search</button>
+            </div>
+          )}
+          <div className="home-technician-grid">
+            {filtered.map((technician) => (
+              <TechnicianCard
+                key={technician.id}
+                technician={technician}
+                onProfile={() => onSelectProvider(technician, "profile")}
+                onBook={() => onSelectProvider(technician, "booking")}
+              />
             ))}
           </div>
-        </div>
-      </section>
+          {filtered.length === 0 && (
+            <div className="home-empty home-white-panel" role="status">
+              <SearchX size={32} />
+              <h3>No matching professionals</h3>
+              <p>There are no demo providers for this service and area yet.</p>
+              <button
+                className="home-button home-button--amber"
+                onClick={resetFilters}
+              >
+                Show all professionals
+              </button>
+            </div>
+          )}
+          <span className="sr-only" aria-live="polite">
+            {filtered.length} demo providers shown.
+          </span>
+        </section>
 
-      <section className="mx-auto grid max-w-7xl gap-8 px-4 py-12 sm:px-6 lg:grid-cols-3 lg:px-8">
-        <SectionHeading title="How ShebaCheck works" body="The marketplace flow is simple, but the decision support is evidence-backed." />
-        {[
-          [Search, "Search and compare", "Filter by area, budget, rating, availability, and verification status."],
-          [ShieldCheck, "Review trust signals", "Read booking history, cancellation rate, response time, and eligible customer reviews."],
-          [CalendarCheck, "Book clearly", "Confirm address, timing, estimated price, and cancellation terms before requesting service."]
-        ].map(([Icon, title, body]) => (
-          <Card key={String(title)} className="p-6">
-            <Icon className="h-8 w-8 text-forest-700" aria-hidden="true" />
-            <h3 className="mt-5 text-lg font-bold text-warm-900">{title as string}</h3>
-            <p className="mt-2 text-sm leading-6 text-warm-600">{body as string}</p>
-          </Card>
-        ))}
-      </section>
-
-      <section className="bg-forest-900 py-12 text-white">
-        <div className="mx-auto grid max-w-7xl gap-6 px-4 sm:px-6 lg:grid-cols-[0.9fr_1.1fr] lg:px-8">
-          <div className="max-w-3xl">
-            <p className="mb-3 text-sm font-bold uppercase tracking-[0.14em] text-emerald-200">Trust and safety</p>
-            <h2 className="text-2xl font-bold text-white md:text-3xl">Verification is a signal, not a label of character.</h2>
-            <p className="mt-3 text-base leading-7 text-emerald-50/85">
-              ShebaCheck presents multiple indicators side by side so customers do not have to rely on a single badge.
+        <section
+          className="home-protection home-white-panel"
+          id="how-it-works"
+          aria-labelledby="home-protection-title"
+        >
+          <div className="home-protection-intro">
+            <p className="home-trust-label">
+              <ShieldCheck size={16} />
+              <span>Zero-Compromise Security Framework</span>
+            </p>
+            <h2 id="home-protection-title">
+              How ShebaCheck Protects Your Home and Family
+            </h2>
+            <p>
+              We rebuilt urban service delivery in Dhaka from the ground up,
+              placing criminal background verification, price transparency, and
+              dispute escrow first.
             </p>
           </div>
-          <div className="grid gap-4 sm:grid-cols-3">
-            {[
-              [CheckCircle2, "Review eligibility", "Only completed demo bookings can be reviewed."],
-              [UsersRound, "Dispute reports", "Customers can document issues for operations review."],
-              [Star, "Balanced ratings", "Ratings are paired with volume, recency, and cancellation data."]
-            ].map(([Icon, title, body]) => (
-              <div key={String(title)} className="rounded-2xl border border-white/15 bg-white/8 p-5">
-                <Icon className="h-6 w-6 text-emerald-200" aria-hidden="true" />
-                <p className="mt-4 font-bold">{title as string}</p>
-                <p className="mt-2 text-sm leading-6 text-emerald-50/80">{body as string}</p>
-              </div>
+          <div className="home-protection-grid">
+            {protectionSteps.map(({ title, body, note, icon: Icon }, index) => (
+              <article className="home-protection-step" key={title}>
+                <span className="home-step-number">0{index + 1}</span>
+                <h3>{title}</h3>
+                <p>{body}</p>
+                <span className="home-step-note">
+                  <Icon size={17} aria-hidden="true" />
+                  {note}
+                </span>
+              </article>
             ))}
           </div>
-        </div>
-      </section>
+        </section>
 
-      <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-        <SectionHeading title="Customer testimonials" body="Illustrative customer feedback for the prototype experience." />
-        <div className="mt-6 grid gap-4 md:grid-cols-3">
-          {["I could see job history before calling.", "The cancellation terms were clear.", "Saved provider lists made repeat work easier."].map((quote, index) => (
-            <Card key={quote} className="p-6">
-              <p className="text-sm leading-6 text-warm-700">“{quote}”</p>
-              <p className="mt-4 font-bold text-warm-900">{["Sadia, Dhanmondi", "Muntasir, Uttara", "Nabila, Mohammadpur"][index]}</p>
-            </Card>
-          ))}
-        </div>
-      </section>
+        <section
+          className="home-reviews-section"
+          aria-labelledby="home-reviews-title"
+        >
+          <div className="home-section-heading home-white-panel">
+            <div>
+              <span className="home-eyebrow">Authentic Reviews</span>
+              <h2 id="home-reviews-title">
+                Stories from Gulshan, Banani &amp; Dhanmondi
+              </h2>
+            </div>
+            <p className="home-review-eligibility">
+              <BadgeCheck size={18} aria-hidden="true" />
+              Only verified booking accounts can review
+            </p>
+          </div>
+          <div className="home-reviews-grid">
+            {homeTestimonials.map(({ name, initials, detail, quote }) => (
+              <figure className="home-review home-white-panel" key={name}>
+                <div
+                  className="home-review-stars"
+                  aria-label="5 out of 5 stars"
+                >
+                  {Array.from({ length: 5 }, (_, index) => (
+                    <Star
+                      key={index}
+                      size={17}
+                      fill="currentColor"
+                      aria-hidden="true"
+                    />
+                  ))}
+                </div>
+                <blockquote>&quot;{quote}&quot;</blockquote>
+                <figcaption>
+                  <span className="home-review-avatar">{initials}</span>
+                  <span>
+                    <strong>{name}</strong>
+                    <span>{detail}</span>
+                  </span>
+                </figcaption>
+              </figure>
+            ))}
+          </div>
+        </section>
 
-      <footer className="border-t border-warm-200 bg-white py-8">
-        <div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 text-sm text-warm-600 sm:px-6 md:flex-row md:items-center md:justify-between lg:px-8">
-          <p className="font-semibold text-warm-900">ShebaCheck demo frontend</p>
-          <p className="flex items-center gap-2">
-            <MapPin className="h-4 w-4" aria-hidden="true" />
-            Built for Dhaka service discovery, using synthetic demo data.
-          </p>
-        </div>
-      </footer>
-    </main>
+        <section
+          className="home-provider-banner home-white-panel"
+          id="become-provider"
+          aria-labelledby="home-provider-title"
+        >
+          <div>
+            <p className="home-eyebrow">
+              Are You a Skilled Electrician, Plumber, or Technician?
+            </p>
+            <h2 id="home-provider-title">
+              Join ShebaCheck Verified Network. Earn up to{" "}
+              <span className="taka">&#2547;</span>45,000/month.
+            </h2>
+            <p className="home-provider-description">
+              Receive guaranteed bookings in your local Dhaka neighborhood with
+              weekly bKash payouts, personal accident insurance cover, and
+              professional tools training.
+            </p>
+          </div>
+          <div className="home-provider-actions">
+            <button
+              className="home-button home-button--amber"
+              onClick={() => setPage("provider-dashboard")}
+            >
+              Apply as Technician
+            </button>
+            <button
+              className="home-button home-button--neutral"
+              onClick={() => setDialog("requirements")}
+            >
+              Verification Requirements
+            </button>
+          </div>
+        </section>
+      </main>
+      <HomeFooter
+        onZone={(area) => {
+          resetFilters();
+          setZone(area);
+          scrollToSection("services");
+        }}
+        onService={(service) => {
+          resetFilters();
+          setCategory(service);
+          scrollToSection("services");
+        }}
+        onDialog={setDialog}
+      />
+      <HomeMobileNav
+        onServices={() => scrollToSection("services")}
+        onBook={bookFeatured}
+        setPage={setPage}
+      />
+      <span className="sr-only" role="status">
+        {announcement}
+      </span>
+      {dialog && <HomeDialog kind={dialog} onClose={() => setDialog(null)} />}
+    </div>
   );
 }

@@ -1,15 +1,29 @@
-import type { SelectHTMLAttributes } from "react";
+import { useId, type SelectHTMLAttributes } from "react";
 
 interface SelectFieldProps extends SelectHTMLAttributes<HTMLSelectElement> {
   label: string;
   options: string[];
 }
 
-export function SelectField({ label, options, className = "", ...props }: SelectFieldProps) {
+export function SelectField({
+  label,
+  options,
+  className = "",
+  id,
+  ...props
+}: SelectFieldProps) {
+  const generatedId = useId();
+  const selectId = id ?? generatedId;
   return (
-    <label className="block">
-      <span className="mb-2 block text-sm font-semibold text-warm-900">{label}</span>
+    <div className="block">
+      <label
+        htmlFor={selectId}
+        className="mb-2 block text-sm font-semibold text-warm-900"
+      >
+        {label}
+      </label>
       <select
+        id={selectId}
         className={`focus-ring min-h-12 w-full rounded-xl border border-warm-200 bg-white px-3.5 text-sm text-warm-900 ${className}`}
         {...props}
       >
@@ -17,6 +31,6 @@ export function SelectField({ label, options, className = "", ...props }: Select
           <option key={option}>{option}</option>
         ))}
       </select>
-    </label>
+    </div>
   );
 }
