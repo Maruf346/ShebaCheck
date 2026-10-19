@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { motion } from "framer-motion";
 import {
   BadgeCheck,
@@ -24,6 +24,9 @@ import {
   type HomeDialogKind,
 } from "../../data/homeContent";
 import type { AppPage, Provider } from "../../types";
+import { ApiError, listFavoriteProviders, removeFavoriteProvider, saveFavoriteProvider, searchProviders } from "../../api/client";
+import { useAuth } from "../../auth/AuthProvider";
+import { adaptHomeTechnician } from "../../api/adapters";
 
 const reveal = {
   hidden: { opacity: 0, y: 18 },
@@ -48,6 +51,12 @@ function getSavedService() {
 }
 
 export function CustomerHome({ setPage, onSelectProvider }: CustomerHomeProps) {
+  const { user } = useAuth();
+  const [favoriteProviderIds, setFavoriteProviderIds] = useState<number[]>([]);
+  const [apiTechnicians, setApiTechnicians] = useState<typeof homeTechnicians>([]);
+  const [apiAvailable, setApiAvailable] = useState(false);
+  const [apiLoading, setApiLoading] = useState(true);
+  const [apiMessage, setApiMessage] = useState("");
   const [category, setCategory] = useState("All");
   const [zone, setZone] = useState("All Zones");
   const [location, setLocation] = useState("Gulshan 1 & 2");
@@ -58,7 +67,37 @@ export function CustomerHome({ setPage, onSelectProvider }: CustomerHomeProps) {
   const [announcement, setAnnouncement] = useState("");
   const [dialog, setDialog] = useState<HomeDialogKind | null>(null);
 
-  const filtered = homeTechnicians.filter((technician) => {
+  useEffect(() => {
+    let active = true;
+    searchProviders({ ordering: "-average_rating" })
+      .then((response) => {
+        if (!active) return;
+        setApiTechnicians(response.results.map(adaptHomeTechnician));
+        setApiAvailable(true);
+        setApiMessage(response.results.length ? "Live local professionals" : "No provider profiles yet — showing preview listings.");
+      })
+      .catch((error: unknown) => {
+        if (!active) return;
+        setApiAvailable(false);
+        setApiMessage(error instanceof ApiError && error.status !== 0 ? `API unavailable: ${error.message}` : "Backend offline — showing preview listings.");
+      })
+      .finally(() => { if (active) setApiLoading(false); });
+    return () => { active = false; };
+  }, []);
+
+  useEffect(() => {
+    if (!user || user.role !== "customer") return;
+    listFavoriteProviders()
+      .then((page) => {
+        setFavoriteProviderIds(page.results.map((favorite) => favorite.provider.id));
+        if (apiTechnicians[0]) setSaved(page.results.some((favorite) => favorite.provider.id === apiTechnicians[0].id));
+      })
+      .catch(() => undefined);
+  }, [user, apiTechnicians]);
+
+  const technicians = apiAvailable && apiTechnicians.length ? apiTechnicians : homeTechnicians;
+
+  const filtered = technicians.filter((technician) => {
     const words =
       `${technician.name} ${technician.category} ${technician.specialty} ${technician.serviceLabel} ${technician.bio}`
         .toLowerCase()
@@ -104,8 +143,29 @@ export function CustomerHome({ setPage, onSelectProvider }: CustomerHomeProps) {
     setHasSearched(false);
   }
 
-  function toggleSaved() {
-    const nextSaved = !saved;
+  async function toggleSaved() {
+    const liveProviderId = apiTechnicians[0]?.id;
+    const isSaved = liveProviderId ? favoriteProviderIds.includes(liveProviderId) : saved;
+    const nextSaved = !isSaved;
+    if (user?.role === "customer" && apiTechnicians.length) {
+      try {
+        if (nextSaved) {
+          await saveFavoriteProvider(liveProviderId!);
+          setFavoriteProviderIds((ids) => ids.includes(liveProviderId!) ? ids : [...ids, liveProviderId!]);
+        } else {
+          const page = await listFavoriteProviders();
+          const favorite = page.results.find((item) => item.provider.id === liveProviderId);
+          if (favorite) await removeFavoriteProvider(favorite.id);
+          setFavoriteProviderIds((ids) => ids.filter((id) => id !== liveProviderId));
+        }
+      } catch {
+        setAnnouncement("Sign in as a customer to save providers.");
+        return;
+      }
+    } else if (nextSaved && liveProviderId && !user) {
+      setAnnouncement("Sign in to save live providers.");
+      return;
+    }
     setSaved(nextSaved);
     try {
       localStorage.setItem("shebacheck:featured-saved", String(nextSaved));
@@ -226,7 +286,7 @@ export function CustomerHome({ setPage, onSelectProvider }: CustomerHomeProps) {
                 Verified Technicians Available Today
               </h2>
               <p className="mt-1.5 text-xs leading-[18px] font-medium text-stone-500 md:mt-0.5 md:leading-4">
-                Biometric NID registered and upfront locked BDT pricing.
+                {apiMessage || "Biometric NID registered and upfront locked BDT pricing."}
               </p>
             </div>
             <div
@@ -251,7 +311,7 @@ export function CustomerHome({ setPage, onSelectProvider }: CustomerHomeProps) {
               role="status"
             >
               <p>
-                {filtered.length} demo{" "}
+                {filtered.length} {apiAvailable && apiTechnicians.length ? "" : "demo "}{" "}
                 {filtered.length === 1 ? "professional" : "professionals"}
                 {submittedQuery ? ` matching "${submittedQuery}"` : ""} in{" "}
                 {zone === "All Zones" ? "Dhaka" : zone}.
@@ -288,7 +348,7 @@ export function CustomerHome({ setPage, onSelectProvider }: CustomerHomeProps) {
             >
               <SearchX size={32} />
               <h3>No matching professionals</h3>
-              <p>There are no demo providers for this service and area yet.</p>
+              <p>{apiLoading ? "Loading provider listings…" : apiAvailable && apiTechnicians.length === 0 ? "No provider profiles have been published yet." : "There are no providers for this service and area yet."}</p>
               <button
                 className="inline-flex shrink-0 items-center justify-center rounded-full border border-transparent font-bold transition-[background,box-shadow,transform] duration-[160ms] active:scale-[0.98] min-h-11 gap-[7px] px-6 py-3 text-sm leading-5 bg-brand-amber text-white shadow-home-button hover:bg-[#ed8f00] hover:shadow-home-button-hover"
                 onClick={resetFilters}
@@ -298,7 +358,7 @@ export function CustomerHome({ setPage, onSelectProvider }: CustomerHomeProps) {
             </div>
           )}
           <span className="sr-only" aria-live="polite">
-            {filtered.length} demo providers shown.
+            {filtered.length} {apiAvailable && apiTechnicians.length ? "" : "demo "}providers shown.
           </span>
         </section>
 
@@ -425,7 +485,7 @@ export function CustomerHome({ setPage, onSelectProvider }: CustomerHomeProps) {
           <div className="flex w-full shrink-0 flex-wrap gap-3 md:w-auto md:flex-nowrap">
             <button
               className="inline-flex shrink-0 items-center justify-center rounded-full border border-transparent font-bold transition-[background,box-shadow,transform] duration-[160ms] active:scale-[0.98] min-h-[50px] flex-1 gap-[7px] px-[18px] py-3.5 text-xs leading-5 md:flex-initial md:px-[23px] md:text-[13px] bg-brand-amber text-white shadow-home-button hover:bg-[#ed8f00] hover:shadow-home-button-hover"
-              onClick={() => setPage("provider-dashboard")}
+              onClick={() => setPage("provider-register")}
             >
               Apply as Technician
             </button>

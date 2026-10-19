@@ -7,9 +7,10 @@ from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnl
 from rest_framework.response import Response
 
 from apps.users.permissions import IsProvider
-from .models import AvailabilityBlock, PortfolioItem, ProviderProfile, ProviderService
+from .models import AvailabilityBlock, FavoriteProvider, PortfolioItem, ProviderProfile, ProviderService
 from .serializers import (
     AvailabilityBlockSerializer,
+    FavoriteProviderSerializer,
     PortfolioItemSerializer,
     ProviderProfileUpdateSerializer,
     ProviderServiceSerializer,
@@ -26,6 +27,7 @@ from .serializers import (
             OpenApiParameter("min_price", int, description="Inclusive minimum starting price."),
             OpenApiParameter("max_price", int, description="Inclusive maximum starting price."),
             OpenApiParameter("min_rating", float, description="Minimum average review rating."),
+            OpenApiParameter("available_on", str, description="Only include providers not blocked on this ISO date (YYYY-MM-DD)."),
         ],
     ),
     retrieve=extend_schema(tags=["Providers"], summary="Get a provider profile"),
@@ -52,12 +54,15 @@ class ProviderViewSet(viewsets.ReadOnlyModelViewSet):
         min_price = params.get("min_price")
         max_price = params.get("max_price")
         min_rating = params.get("min_rating")
+        available_on = params.get("available_on")
         if min_price:
             queryset = queryset.filter(starting_price__gte=min_price)
         if max_price:
             queryset = queryset.filter(starting_price__lte=max_price)
         if min_rating:
             queryset = queryset.filter(average_rating__gte=min_rating)
+        if available_on:
+            queryset = queryset.exclude(availability_blocks__date=available_on)
         return queryset
 
     def get_permissions(self):
@@ -159,3 +164,32 @@ class AvailabilityBlockViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, m
             defaults={"display_name": " ".join(filter(None, (self.request.user.first_name, self.request.user.last_name))) or self.request.user.email.split("@", 1)[0]},
         )
         serializer.save(provider=profile)
+
+
+@extend_schema_view(
+    list=extend_schema(tags=["Providers"], summary="List my saved providers"),
+    create=extend_schema(tags=["Providers"], summary="Save a provider"),
+    destroy=extend_schema(tags=["Providers"], summary="Remove a saved provider"),
+)
+class FavoriteProviderViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, mixins.DestroyModelMixin, viewsets.GenericViewSet):
+    queryset = FavoriteProvider.objects.all()
+    serializer_class = FavoriteProviderSerializer
+    permission_classes = (IsAuthenticated,)
+
+    def get_permissions(self):
+        if self.request.method in ("POST", "DELETE"):
+            return (IsAuthenticated(),)
+        return super().get_permissions()
+
+    def get_queryset(self):
+        if getattr(self, "swagger_fake_view", False):
+            return self.queryset.none()
+        if self.request.user.role != "customer":
+            return FavoriteProvider.objects.none()
+        return FavoriteProvider.objects.filter(customer=self.request.user, provider__is_active=True).select_related("provider", "provider__user").prefetch_related("provider__services", "provider__portfolio")
+
+    def perform_create(self, serializer):
+        if self.request.user.role != "customer":
+            from rest_framework.exceptions import PermissionDenied
+            raise PermissionDenied("Only customer accounts can save providers.")
+        serializer.save(customer=self.request.user)

@@ -1,4 +1,4 @@
-import { BriefcaseBusiness, MapPin, ShieldCheck, Star, TimerReset } from "lucide-react";
+import { Bookmark, BriefcaseBusiness, MapPin, ShieldCheck, Star, TimerReset } from "lucide-react";
 import type { Provider } from "../types";
 import { Badge } from "./ui/Badge";
 import { Button } from "./ui/Button";
@@ -8,11 +8,15 @@ export function ProviderCard({
   provider,
   onProfile,
   onBook,
+  onSave,
+  isSaved = false,
   compact = false
 }: {
   provider: Provider;
   onProfile: () => void;
   onBook: () => void;
+  onSave?: () => void;
+  isSaved?: boolean;
   compact?: boolean;
 }) {
   return (
@@ -67,6 +71,7 @@ export function ProviderCard({
           <Button variant="secondary" onClick={onProfile}>
             View profile
           </Button>
+          {onSave && <Button type="button" variant="ghost" aria-pressed={isSaved} onClick={onSave}><Bookmark className="h-4 w-4" fill={isSaved ? "currentColor" : "none"} aria-hidden="true" />{isSaved ? "Saved" : "Save provider"}</Button>}
         </div>
       </div>
     </Card>

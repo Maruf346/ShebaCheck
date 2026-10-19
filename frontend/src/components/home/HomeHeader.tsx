@@ -102,7 +102,7 @@ export function HomeHeader({
           </button>
           <button
             className="inline-flex shrink-0 items-center justify-center rounded-full border border-transparent font-bold transition-[background,box-shadow,transform] duration-[160ms] active:scale-[0.98] hidden min-h-[34px] gap-[7px] !border-stone-200 px-4 py-2 text-xs leading-4 text-stone-800 hover:bg-stone-100 md:inline-flex"
-            onClick={() => setPage("customer-dashboard")}
+            onClick={() => setPage("login")}
           >
             <UserRound size={15} aria-hidden="true" />
             Sign In
@@ -149,7 +149,7 @@ export function HomeHeader({
             className="inline-flex items-center gap-3"
             onClick={() => {
               setMenuOpen(false);
-              setPage("customer-dashboard");
+              setPage("login");
             }}
           >
             <UserRound className="h-4 w-4 text-brand-amber" aria-hidden="true" />

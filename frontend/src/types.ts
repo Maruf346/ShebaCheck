@@ -2,6 +2,9 @@ import type { LucideIcon } from "lucide-react";
 
 export type AppPage =
   | "home"
+  | "login"
+  | "register"
+  | "provider-register"
   | "search"
   | "profile"
   | "booking"
@@ -34,6 +37,7 @@ export interface Provider {
   tags: string[];
   portfolio: string[];
   availability?: ("Today" | "Tomorrow" | "This weekend")[];
+  services?: { id: number; name: string; description: string; price: number }[];
 }
 
 export interface Booking {

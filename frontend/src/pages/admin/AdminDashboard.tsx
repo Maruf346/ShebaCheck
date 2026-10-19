@@ -1,11 +1,11 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AlertTriangle, BarChart3, CalendarCheck, FileCheck2, Gauge, MessageSquareWarning, ShieldQuestion, Users, Wrench } from "lucide-react";
-import { adminCases } from "../../data/mockData";
 import { DashboardShell } from "../../components/DashboardShell";
 import { Badge } from "../../components/ui/Badge";
 import { Button } from "../../components/ui/Button";
 import { Card } from "../../components/ui/Card";
 import { StatCard } from "../../components/ui/StatCard";
+import { ApiError, listBookings, listDisputes, listProviderReviews, searchProviders, type ApiDispute, type ApiReview } from "../../api/client";
 
 const nav = [
   { label: "Overview", icon: Gauge, target: "admin-overview" },
@@ -20,18 +20,43 @@ const nav = [
 
 export function AdminDashboard() {
   const [reviewedCases, setReviewedCases] = useState<string[]>([]);
+  const [providerCount, setProviderCount] = useState(0);
+  const [bookingCount, setBookingCount] = useState(0);
+  const [pendingVerification, setPendingVerification] = useState(0);
+  const [reviews, setReviews] = useState<ApiReview[]>([]);
+  const [disputes, setDisputes] = useState<ApiDispute[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    let active = true;
+    Promise.all([searchProviders(), listBookings(), listDisputes(), listProviderReviews()])
+      .then(([providerPage, bookingPage, disputePage, reviewPage]) => {
+        if (!active) return;
+        setProviderCount(providerPage.count);
+        setBookingCount(bookingPage.count);
+        setPendingVerification(providerPage.results.filter((provider) => !provider.verified_identity).length);
+        setDisputes(disputePage.results);
+        setReviews(reviewPage.results);
+      })
+      .catch((cause: unknown) => {
+        if (active) setError(cause instanceof ApiError ? cause.message : "Could not load operations data.");
+      })
+      .finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
+  }, []);
 
   return (
     <DashboardShell title="Admin dashboard" subtitle="Operational controls, review quality, verification, disputes, and ML model health." nav={nav} admin>
       <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 font-semibold text-amber-900">
-        All statistics, verification states, and ML predictions on this screen are illustrative demo data.
+        {loading ? "Loading live operations data…" : error ? `Live data could not be loaded: ${error}` : "Provider, booking, review, and dispute data is live. ML metrics remain illustrative until an evaluation endpoint is connected."}
       </div>
 
       <div id="admin-overview" className="grid scroll-mt-28 gap-4 sm:grid-cols-2 sm:gap-5 xl:grid-cols-4">
-        <StatCard admin label="Providers" value="1,284" detail="demo active records" icon={Wrench} />
-        <StatCard admin label="Bookings" value="8,742" detail="demo lifetime total" icon={CalendarCheck} />
-        <StatCard admin label="Pending verification" value="93" detail="needs ops review" icon={FileCheck2} />
-        <StatCard admin label="Flagged activity" value="27" detail="illustrative signals" icon={AlertTriangle} />
+        <StatCard admin label="Providers" value={String(providerCount)} detail="active provider profiles" icon={Wrench} />
+        <StatCard admin label="Bookings" value={String(bookingCount)} detail="saved requests" icon={CalendarCheck} />
+        <StatCard admin label="Pending verification" value={String(pendingVerification)} detail="identity review pending" icon={FileCheck2} />
+        <StatCard admin label="Open disputes" value={String(disputes.filter((dispute) => ["open", "in_review"].includes(dispute.status)).length)} detail="awaiting operations" icon={AlertTriangle} />
       </div>
 
       <div className="mt-6 grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
@@ -91,23 +116,18 @@ export function AdminDashboard() {
               </tr>
             </thead>
             <tbody>
-              {adminCases.map((caseItem) => (
-                <tr key={caseItem.id} className="border-t border-warm-100">
-                  <td className="px-5 py-4 font-semibold text-warm-900">{caseItem.id}</td>
-                  <td className="px-5 py-4">{caseItem.reviewer}</td>
-                  <td className="px-5 py-4">{caseItem.provider}</td>
-                  <td className="px-5 py-4">
-                    <Badge tone={caseItem.risk === "High" ? "danger" : caseItem.risk === "Medium" ? "warning" : "neutral"}>{caseItem.risk}</Badge>
-                  </td>
-                  <td className="px-5 py-4">{caseItem.reason}</td>
-                  <td className="px-5 py-4 font-semibold text-amber-800">{caseItem.evidence}</td>
-                  <td className="px-5 py-4">
-                    <Button variant={reviewedCases.includes(caseItem.id) ? "ghost" : "secondary"} disabled={reviewedCases.includes(caseItem.id)} onClick={() => setReviewedCases((current) => [...current, caseItem.id])}>
-                      {reviewedCases.includes(caseItem.id) ? "Reviewed" : "Mark reviewed"}
-                    </Button>
-                  </td>
+              {reviews.map((review) => (
+                <tr key={review.id} className="border-t border-warm-100">
+                  <td className="px-5 py-4 font-semibold text-warm-900">REV-{review.id}</td>
+                  <td className="px-5 py-4">{review.customer_name}</td>
+                  <td className="px-5 py-4">{review.provider_name}</td>
+                  <td className="px-5 py-4"><Badge tone={review.rating <= 2 ? "warning" : "neutral"}>{review.rating} / 5</Badge></td>
+                  <td className="px-5 py-4">{review.body}</td>
+                  <td className="px-5 py-4 font-semibold text-amber-800">Booking #{review.booking}</td>
+                  <td className="px-5 py-4"><Button variant={reviewedCases.includes(String(review.id)) ? "ghost" : "secondary"} disabled={reviewedCases.includes(String(review.id))} onClick={() => setReviewedCases((current) => [...current, String(review.id)])}>{reviewedCases.includes(String(review.id)) ? "Reviewed" : "Mark reviewed"}</Button></td>
                 </tr>
               ))}
+              {reviews.length === 0 && <tr><td className="px-5 py-8 text-center text-warm-600" colSpan={7}>No customer reviews to display yet.</td></tr>}
             </tbody>
           </table>
         </div>
@@ -115,7 +135,7 @@ export function AdminDashboard() {
 
       <div className="mt-6 grid gap-6 lg:grid-cols-2">
         <OpsPanel id="admin-verification" title="Verification management" items={["14 NID checks awaiting manual review", "8 portfolio submissions need evidence quality check", "5 provider reference calls scheduled"]} />
-        <OpsPanel id="admin-disputes" title="Dispute management" items={["3 booking disputes awaiting provider response", "2 refund recommendations in review", "11 closed cases this week in demo data"]} />
+        <OpsPanel id="admin-disputes" title="Dispute management" items={disputes.length ? disputes.map((dispute) => `#${dispute.id} · ${dispute.status.replace(/_/g, " ")} · ${dispute.provider_name}`) : ["No disputes have been opened yet."]} />
         <OpsPanel id="admin-provider-ops" title="Provider operations" items={["Provider records are demo data", "Identity status requires a separate human review", "No automatic enforcement action is enabled"]} />
       </div>
     </DashboardShell>

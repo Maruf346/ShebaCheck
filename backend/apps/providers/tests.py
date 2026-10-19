@@ -4,7 +4,7 @@ from django.contrib.auth import get_user_model
 from django.test import TestCase
 from rest_framework.test import APIClient
 
-from .models import ProviderProfile, ProviderService
+from .models import FavoriteProvider, ProviderProfile, ProviderService
 
 
 User = get_user_model()
@@ -42,3 +42,13 @@ class ProviderApiTests(TestCase):
         response = self.client.post("/api/v1/providers/availability/", {"date": date(2030, 1, 1), "reason": "Annual leave"}, format="json")
         self.assertEqual(response.status_code, 201)
         self.assertEqual(response.data["date"], "2030-01-01")
+
+    def test_customer_can_save_and_remove_provider(self):
+        customer = User.objects.create_user("customer@example.com", "StrongPass!872", role=User.Role.CUSTOMER)
+        self.client.force_authenticate(customer)
+        created = self.client.post("/api/v1/providers/favorites/", {"provider_id": self.profile.id}, format="json")
+        self.assertEqual(created.status_code, 201)
+        self.assertEqual(created.data["provider"]["id"], self.profile.id)
+        self.assertEqual(self.client.get("/api/v1/providers/favorites/").data["count"], 1)
+        self.assertEqual(self.client.delete(f"/api/v1/providers/favorites/{created.data['id']}/").status_code, 204)
+        self.assertEqual(FavoriteProvider.objects.count(), 0)

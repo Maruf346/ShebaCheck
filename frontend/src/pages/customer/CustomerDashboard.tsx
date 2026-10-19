@@ -1,6 +1,21 @@
-import { useState, type FormEvent } from "react";
-import { Bookmark, CalendarCheck, CheckCircle2, MessageSquareWarning, Send, Settings, Star, UserRound } from "lucide-react";
-import { bookings, providers } from "../../data/mockData";
+import { useEffect, useState, type FormEvent } from "react";
+import { Bookmark, CalendarCheck, MessageSquareWarning, Send, Settings, Star, UserRound } from "lucide-react";
+import {
+  ApiError,
+  createDispute,
+  createReview,
+  listBookings,
+  listDisputes,
+  listFavoriteProviders,
+  listReviews,
+  removeFavoriteProvider,
+  type ApiBooking,
+  type ApiDispute,
+  type ApiFavoriteProvider,
+  type ApiReview,
+} from "../../api/client";
+import { adaptBooking, adaptProvider } from "../../api/adapters";
+import { useAuth } from "../../auth/AuthProvider";
 import type { Provider } from "../../types";
 import { DashboardShell } from "../../components/DashboardShell";
 import { Badge } from "../../components/ui/Badge";
@@ -22,34 +37,118 @@ export function CustomerDashboard({
 }: {
   onSelectProvider: (provider: Provider, page: "profile" | "booking") => void;
 }) {
+  const { user, updateProfile: updateAuthProfile } = useAuth();
+  const [apiBookings, setApiBookings] = useState<ApiBooking[]>([]);
+  const [favorites, setFavorites] = useState<ApiFavoriteProvider[]>([]);
+  const [reviews, setReviews] = useState<ApiReview[]>([]);
+  const [disputes, setDisputes] = useState<ApiDispute[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
+  const [actionError, setActionError] = useState("");
   const [reviewBookingId, setReviewBookingId] = useState<string | null>(null);
   const [reviewText, setReviewText] = useState("");
-  const [reviewSubmitted, setReviewSubmitted] = useState(false);
+  const [reviewRating, setReviewRating] = useState(5);
   const [disputeOpen, setDisputeOpen] = useState(false);
-  const [disputeSubmitted, setDisputeSubmitted] = useState(false);
-  const [profileName, setProfileName] = useState("Farhana Akter");
-  const [profilePhone, setProfilePhone] = useState("01712345678");
+  const [disputeBookingId, setDisputeBookingId] = useState("");
+  const [disputeDescription, setDisputeDescription] = useState("");
+  const [profileName, setProfileName] = useState(user?.first_name ?? "");
+  const [profileLastName, setProfileLastName] = useState(user?.last_name ?? "");
+  const [profilePhone, setProfilePhone] = useState(user?.phone ?? "");
   const [profileSaved, setProfileSaved] = useState(false);
+  const [removingFavorite, setRemovingFavorite] = useState<number | null>(null);
 
-  function submitReview(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setReviewSubmitted(true);
-    setReviewBookingId(null);
-    setReviewText("");
+  async function reloadData() {
+    setLoading(true);
+    setLoadError("");
+    try {
+      const [bookingPage, favoritePage, reviewPage, disputePage] = await Promise.all([
+        listBookings(), listFavoriteProviders(), listReviews(undefined, true), listDisputes(),
+      ]);
+      setApiBookings(bookingPage.results);
+      setFavorites(favoritePage.results);
+      setReviews(reviewPage.results);
+      setDisputes(disputePage.results);
+    } catch (error) {
+      setLoadError(error instanceof ApiError ? error.message : "Could not load your account data.");
+    } finally {
+      setLoading(false);
+    }
   }
 
-  function submitDispute(event: FormEvent<HTMLFormElement>) {
+  useEffect(() => { void reloadData(); }, []);
+
+  const bookingViews = apiBookings.map(adaptBooking);
+  const favoriteViews = favorites.map((favorite) => ({
+    id: favorite.id,
+    provider: adaptProvider(favorite.provider),
+    favoriteId: favorite.id,
+  }));
+  const upcomingCount = apiBookings.filter((booking) => ["requested", "confirmed", "reschedule_requested"].includes(booking.status)).length;
+  const eligibleReviewCount = apiBookings.filter((booking) => booking.status === "completed" && !reviews.some((review) => review.booking === booking.id)).length;
+
+  async function submitReview(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setDisputeSubmitted(true);
-    setDisputeOpen(false);
+    if (!reviewBookingId) return;
+    setActionError("");
+    try {
+      await createReview({ booking: Number(reviewBookingId), rating: reviewRating, body: reviewText.trim() });
+      setReviewBookingId(null);
+      setReviewText("");
+      setReviewRating(5);
+      await reloadData();
+    } catch (error) {
+      setActionError(error instanceof Error ? error.message : "Review could not be submitted.");
+    }
+  }
+
+  async function submitDispute(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setActionError("");
+    try {
+      await createDispute({ booking_id: Number(disputeBookingId), description: disputeDescription.trim() });
+      setDisputeOpen(false);
+      setDisputeDescription("");
+      setDisputeBookingId("");
+      await reloadData();
+    } catch (error) {
+      setActionError(error instanceof Error ? error.message : "Dispute could not be submitted.");
+    }
+  }
+
+  async function saveProfile(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setActionError("");
+    try {
+      await updateAuthProfile({ first_name: profileName.trim(), last_name: profileLastName.trim(), phone: profilePhone.trim() });
+      setProfileSaved(true);
+    } catch (error) {
+      setActionError(error instanceof Error ? error.message : "Profile could not be saved.");
+    }
+  }
+
+  async function removeFavorite(favoriteId: number) {
+    setRemovingFavorite(favoriteId);
+    setActionError("");
+    try {
+      await removeFavoriteProvider(favoriteId);
+      setFavorites((current) => current.filter((favorite) => favorite.id !== favoriteId));
+    } catch (error) {
+      setActionError(error instanceof Error ? error.message : "Could not remove this provider.");
+    } finally {
+      setRemovingFavorite(null);
+    }
   }
 
   return (
     <DashboardShell title="Customer dashboard" subtitle="Manage bookings, saved providers, reviews, and account settings." nav={nav}>
+      {loadError && <p className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm leading-6 text-red-800" role="alert">{loadError}<button className="ml-2 font-bold underline" onClick={() => void reloadData()}>Retry</button></p>}
+      {actionError && <p className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm leading-6 text-red-800" role="alert">{actionError}</p>}
+      {loading && <p className="rounded-2xl border border-white bg-white/90 p-4 text-sm font-semibold text-warm-700" role="status">Loading your account…</p>}
+
       <div id="customer-overview" className="grid scroll-mt-28 gap-4 sm:grid-cols-2 md:grid-cols-3">
-        <StatCard label="Upcoming" value="1" detail="confirmed booking" icon={CalendarCheck} />
-        <StatCard label="Review eligible" value="1" detail="completed booking" icon={Star} />
-        <StatCard label="Saved providers" value="3" detail="ready to rebook" icon={Bookmark} />
+        <StatCard label="Upcoming" value={String(upcomingCount)} detail="active booking requests" icon={CalendarCheck} />
+        <StatCard label="Review eligible" value={String(eligibleReviewCount)} detail="completed bookings" icon={Star} />
+        <StatCard label="Saved providers" value={String(favorites.length)} detail="ready to rebook" icon={Bookmark} />
       </div>
 
       <Card id="customer-bookings" className="scroll-mt-28 overflow-hidden">
@@ -67,7 +166,7 @@ export function CustomerDashboard({
               </tr>
             </thead>
             <tbody>
-              {bookings.map((booking) => (
+              {bookingViews.map((booking) => (
                 <tr key={booking.id} className="border-t border-warm-100">
                   <td className="px-5 py-4 font-semibold text-warm-900">{booking.id}</td>
                   <td className="px-5 py-4">{booking.provider}</td>
@@ -77,7 +176,7 @@ export function CustomerDashboard({
                     <Badge tone={booking.status === "Completed" ? "success" : booking.status === "Dispute Open" ? "warning" : "info"}>{booking.status}</Badge>
                   </td>
                   <td className="px-5 py-4">
-                    {booking.reviewEligible ? (
+                    {booking.reviewEligible && !reviews.some((review) => review.booking === Number(booking.id)) ? (
                       <Button variant="secondary" onClick={() => setReviewBookingId(booking.id)}>
                         <Star className="h-4 w-4" aria-hidden="true" /> Write review
                       </Button>
@@ -98,6 +197,12 @@ export function CustomerDashboard({
               <h2 className="mt-1 text-lg font-bold text-warm-900">How did it go?</h2>
             </div>
             <label className="grid gap-2 text-sm font-semibold text-warm-800">
+              Rating
+              <select value={reviewRating} onChange={(event) => setReviewRating(Number(event.target.value))} className="focus-ring min-h-11 w-32 rounded-xl border border-warm-200 bg-white px-3 text-sm">
+                {[5, 4, 3, 2, 1].map((rating) => <option key={rating} value={rating}>{rating} stars</option>)}
+              </select>
+            </label>
+            <label className="grid gap-2 text-sm font-semibold text-warm-800">
               Your review
               <textarea required minLength={8} maxLength={600} rows={3} value={reviewText} onChange={(event) => setReviewText(event.target.value)} className="focus-ring w-full resize-y rounded-xl border border-warm-200 bg-white p-3 text-sm font-normal" placeholder="Share details that may help other customers." />
             </label>
@@ -108,12 +213,6 @@ export function CustomerDashboard({
           </form>
         </Card>
       )}
-      {reviewSubmitted && (
-        <p className="flex items-center gap-2 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm font-semibold text-amber-900" role="status">
-          <CheckCircle2 className="h-5 w-5" aria-hidden="true" /> Review saved in this demo session.
-        </p>
-      )}
-
       <div className="grid min-w-0 gap-5 xl:grid-cols-2">
         <Card id="customer-saved" className="scroll-mt-28 min-w-0 p-4 sm:p-6">
           <div className="flex items-start justify-between gap-3">
@@ -124,19 +223,22 @@ export function CustomerDashboard({
             <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-amber-50 text-amber-800"><Bookmark className="h-5 w-5" aria-hidden="true" /></span>
           </div>
           <div className="mt-4 grid gap-3">
-            {providers.slice(0, 3).map((provider) => (
-              <div key={provider.id} className="flex min-w-0 items-center justify-between gap-2 rounded-xl border border-warm-200 bg-white p-3 sm:gap-3">
-                <div className="flex min-w-0 items-center gap-2 sm:gap-3">
-                  <img src={provider.image} alt="" className="h-12 w-12 rounded-xl object-cover" />
-                  <div className="min-w-0">
-                    <p className="truncate font-bold text-warm-900">{provider.name}</p>
-                    <p className="truncate text-sm text-warm-600">{provider.category} in {provider.area}</p>
+            {favoriteViews.map(({ id, provider, favoriteId }) => {
+              return (
+                <div key={id} className="flex min-w-0 items-center justify-between gap-2 rounded-xl border border-warm-200 bg-white p-3 sm:gap-3">
+                  <div className="flex min-w-0 items-center gap-2 sm:gap-3">
+                    <img src={provider.image} alt="" className="h-12 w-12 rounded-xl object-cover" />
+                    <div className="min-w-0">
+                      <p className="truncate font-bold text-warm-900">{provider.name}</p>
+                      <p className="truncate text-sm text-warm-600">{provider.category} in {provider.area}</p>
+                    </div>
                   </div>
+                  <div className="flex shrink-0 gap-2"><Button className="px-3 sm:px-4" variant="secondary" onClick={() => onSelectProvider(provider, "booking")}>Rebook</Button>{favoriteId !== null && <Button className="px-3" variant="ghost" disabled={removingFavorite === favoriteId} aria-label={`Remove ${provider.name} from saved providers`} onClick={() => void removeFavorite(favoriteId)}>×</Button>}</div>
                 </div>
-                <Button className="shrink-0 px-3 sm:px-4" variant="secondary" onClick={() => onSelectProvider(provider, "booking")}>Rebook</Button>
-              </div>
-            ))}
+              );
+            })}
           </div>
+          {!loading && favoriteViews.length === 0 && <p className="mt-4 rounded-xl border border-dashed border-warm-200 bg-warm-50 p-4 text-sm text-warm-600">You have no saved providers yet. Save a provider from search results.</p>}
         </Card>
 
         <Card id="customer-disputes" className="scroll-mt-28 p-4 sm:p-6">
@@ -148,18 +250,20 @@ export function CustomerDashboard({
             </div>
             <MessageSquareWarning className="mt-1 h-5 w-5 shrink-0 text-amber-700" aria-hidden="true" />
           </div>
-          {disputeSubmitted ? (
-            <p className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm font-semibold text-amber-900" role="status">Demo report received. No case was sent to a service team.</p>
-          ) : disputeOpen ? (
+          {disputeOpen ? (
             <form className="mt-4 grid gap-3" onSubmit={submitDispute}>
-              <label className="grid gap-2 text-sm font-semibold text-warm-800">What happened?
-                <textarea required minLength={10} rows={3} className="focus-ring w-full rounded-xl border border-warm-200 p-3 text-sm font-normal" placeholder="Describe the issue and related booking." />
+              <label className="grid gap-2 text-sm font-semibold text-warm-800">Booking
+                <select required value={disputeBookingId} onChange={(event) => setDisputeBookingId(event.target.value)} className="focus-ring min-h-11 rounded-xl border border-warm-200 bg-white px-3 text-sm font-normal"><option value="">Select a booking</option>{bookingViews.filter((booking) => ["Completed", "Confirmed"].includes(booking.status)).map((booking) => <option key={booking.id} value={booking.id}>{booking.id} · {booking.service}</option>)}</select>
               </label>
-              <div className="flex flex-wrap gap-2"><Button type="submit">Send demo report</Button><Button type="button" variant="ghost" onClick={() => setDisputeOpen(false)}>Cancel</Button></div>
+              <label className="grid gap-2 text-sm font-semibold text-warm-800">What happened?
+                <textarea required minLength={10} rows={3} value={disputeDescription} onChange={(event) => setDisputeDescription(event.target.value)} className="focus-ring w-full rounded-xl border border-warm-200 p-3 text-sm font-normal" placeholder="Describe the issue and related booking." />
+              </label>
+              <div className="flex flex-wrap gap-2"><Button type="submit">Send report</Button><Button type="button" variant="ghost" onClick={() => setDisputeOpen(false)}>Cancel</Button></div>
             </form>
           ) : (
             <div className="mt-5 rounded-xl border border-dashed border-warm-200 bg-warm-50 p-4">
-              <p className="text-sm text-warm-600">No open reports. Start a demo report if a booking needs support.</p>
+              <p className="text-sm text-warm-600">{disputes.length ? `${disputes.length} report${disputes.length === 1 ? "" : "s"} on your account.` : "No open reports. Submit a report for a confirmed or completed booking."}</p>
+              {disputes.map((dispute) => <p key={dispute.id} className="mt-2 text-xs text-warm-600">#{dispute.id} · {dispute.status.replace(/_/g, " ")}</p>)}
               <Button className="mt-3" variant="secondary" onClick={() => setDisputeOpen(true)}>Start a report</Button>
             </div>
           )}
@@ -170,8 +274,8 @@ export function CustomerDashboard({
             <span className="grid size-10 place-items-center rounded-xl bg-amber-50 text-amber-800"><Star className="h-5 w-5" aria-hidden="true" /></span>
             <div><p className="text-xs font-extrabold uppercase tracking-[0.14em] text-amber-700">Community</p><h2 className="text-lg font-bold text-warm-900 sm:text-xl">Your reviews</h2></div>
           </div>
-          <p className="mt-4 text-sm leading-6 text-warm-600">{reviewSubmitted ? "Your latest demo review has been saved for this session." : "Reviews can be added to eligible completed bookings from the booking list."}</p>
-          {reviewSubmitted && <Badge tone="warning">Saved in demo session</Badge>}
+          <p className="mt-4 text-sm leading-6 text-warm-600">{reviews.length ? `${reviews.length} review${reviews.length === 1 ? "" : "s"} submitted from completed bookings.` : "Reviews can be added to eligible completed bookings from the booking list."}</p>
+          {reviews.map((review) => <p key={review.id} className="mt-2 text-xs text-warm-600">{review.rating}/5 · {review.body}</p>)}
         </Card>
 
         <Card id="customer-settings" className="scroll-mt-28 p-4 sm:p-6">
@@ -179,10 +283,11 @@ export function CustomerDashboard({
             <span className="grid size-10 place-items-center rounded-xl bg-amber-50 text-amber-800"><Settings className="h-5 w-5" aria-hidden="true" /></span>
             <div><p className="text-xs font-extrabold uppercase tracking-[0.14em] text-amber-700">Account</p><h2 className="text-lg font-bold text-warm-900 sm:text-xl">Profile settings</h2></div>
           </div>
-          <form className="mt-4 grid gap-3 sm:grid-cols-2" onSubmit={(event) => { event.preventDefault(); setProfileSaved(true); }}>
-            <label className="grid gap-1.5 text-xs font-bold text-warm-700">Full name<input required value={profileName} onChange={(event) => { setProfileName(event.target.value); setProfileSaved(false); }} className="focus-ring min-h-11 rounded-xl border border-warm-200 px-3 text-sm font-medium" /></label>
+          <form className="mt-4 grid gap-3 sm:grid-cols-2" onSubmit={saveProfile}>
+            <label className="grid gap-1.5 text-xs font-bold text-warm-700">First name<input required value={profileName} onChange={(event) => { setProfileName(event.target.value); setProfileSaved(false); }} className="focus-ring min-h-11 rounded-xl border border-warm-200 px-3 text-sm font-medium" /></label>
+            <label className="grid gap-1.5 text-xs font-bold text-warm-700">Last name<input value={profileLastName} onChange={(event) => { setProfileLastName(event.target.value); setProfileSaved(false); }} className="focus-ring min-h-11 rounded-xl border border-warm-200 px-3 text-sm font-medium" /></label>
             <label className="grid gap-1.5 text-xs font-bold text-warm-700">Phone number<input required inputMode="tel" value={profilePhone} onChange={(event) => { setProfilePhone(event.target.value); setProfileSaved(false); }} className="focus-ring min-h-11 rounded-xl border border-warm-200 px-3 text-sm font-medium" /></label>
-            <div className="flex flex-wrap items-center gap-3 sm:col-span-2"><Button type="submit">Save profile</Button>{profileSaved && <span className="text-sm font-semibold text-amber-900" role="status">Saved in this demo session.</span>}</div>
+            <div className="flex flex-wrap items-center gap-3 sm:col-span-2"><Button type="submit">Save profile</Button>{profileSaved && <span className="text-sm font-semibold text-amber-900" role="status">Profile saved.</span>}</div>
           </form>
         </Card>
       </div>

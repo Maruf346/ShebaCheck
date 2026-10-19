@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import AvailabilityBlock, PortfolioItem, ProviderProfile, ProviderService
+from .models import AvailabilityBlock, FavoriteProvider, PortfolioItem, ProviderProfile, ProviderService
 
 
 class ProviderServiceSerializer(serializers.ModelSerializer):
@@ -66,4 +66,14 @@ class AvailabilityBlockSerializer(serializers.ModelSerializer):
     class Meta:
         model = AvailabilityBlock
         fields = ("id", "date", "reason", "created_at")
+        read_only_fields = ("id", "created_at")
+
+
+class FavoriteProviderSerializer(serializers.ModelSerializer):
+    provider = PublicProviderSerializer(read_only=True)
+    provider_id = serializers.PrimaryKeyRelatedField(source="provider", queryset=ProviderProfile.objects.filter(is_active=True), write_only=True)
+
+    class Meta:
+        model = FavoriteProvider
+        fields = ("id", "provider", "provider_id", "created_at")
         read_only_fields = ("id", "created_at")

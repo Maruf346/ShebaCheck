@@ -72,3 +72,16 @@ class PortfolioItem(models.Model):
 
     def __str__(self) -> str:
         return self.title
+
+
+class FavoriteProvider(models.Model):
+    customer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="favorite_providers")
+    provider = models.ForeignKey(ProviderProfile, on_delete=models.CASCADE, related_name="favorited_by")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ("-created_at",)
+        constraints = [models.UniqueConstraint(fields=("customer", "provider"), name="unique_customer_favorite_provider")]
+
+    def __str__(self) -> str:
+        return f"{self.customer} saved {self.provider}"

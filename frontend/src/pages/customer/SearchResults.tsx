@@ -1,6 +1,9 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Filter, RotateCcw, SearchX } from "lucide-react";
-import { providers } from "../../data/mockData";
+import { ApiError, listFavoriteProviders, removeFavoriteProvider, saveFavoriteProvider, searchProviders } from "../../api/client";
+import { useAuth } from "../../auth/AuthProvider";
+import { adaptProvider } from "../../api/adapters";
+import { providers as demoProviders } from "../../data/mockData";
 import type { Provider } from "../../types";
 import { ProviderCard } from "../../components/ProviderCard";
 import { Button } from "../../components/ui/Button";
@@ -8,6 +11,7 @@ import { Card } from "../../components/ui/Card";
 import { SelectField } from "../../components/ui/SelectField";
 
 export function SearchResults({ onSelectProvider }: { onSelectProvider: (provider: Provider, page: "profile" | "booking") => void }) {
+  const { user } = useAuth();
   const [category, setCategory] = useState("All services");
   const [area, setArea] = useState("All Dhaka");
   const [budget, setBudget] = useState("Any budget");
@@ -15,9 +19,80 @@ export function SearchResults({ onSelectProvider }: { onSelectProvider: (provide
   const [availability, setAvailability] = useState("Any time");
   const [verification, setVerification] = useState("All providers");
   const [sortBy, setSortBy] = useState("Recommended");
+  const [apiProviders, setApiProviders] = useState<Provider[]>([]);
+  const [apiMode, setApiMode] = useState(true);
+  const [loading, setLoading] = useState(true);
+  const [apiError, setApiError] = useState("");
+  const [savedIds, setSavedIds] = useState<number[]>([]);
+  const [favoriteIds, setFavoriteIds] = useState<Record<number, number>>({});
+  const [favoriteError, setFavoriteError] = useState("");
+
+  useEffect(() => {
+    if (!user || user.role !== "customer") { setSavedIds([]); setFavoriteIds({}); return; }
+    listFavoriteProviders().then((page) => {
+      setSavedIds(page.results.map((favorite) => favorite.provider.id));
+      setFavoriteIds(Object.fromEntries(page.results.map((favorite) => [favorite.provider.id, favorite.id])));
+    }).catch((error: unknown) => setFavoriteError(error instanceof Error ? error.message : "Could not load saved providers."));
+  }, [user]);
+
+  async function toggleFavorite(provider: Provider) {
+    setFavoriteError("");
+    if (!user || user.role !== "customer") { setFavoriteError("Sign in as a customer to save providers."); return; }
+    try {
+      if (savedIds.includes(provider.id)) {
+        const favoriteId = favoriteIds[provider.id];
+        if (favoriteId) await removeFavoriteProvider(favoriteId);
+        setSavedIds((ids) => ids.filter((id) => id !== provider.id));
+        setFavoriteIds((ids) => { const next = { ...ids }; delete next[provider.id]; return next; });
+      } else {
+        const favorite = await saveFavoriteProvider(provider.id);
+        setSavedIds((ids) => [...ids, provider.id]);
+        setFavoriteIds((ids) => ({ ...ids, [provider.id]: favorite.id }));
+      }
+    } catch (error) { setFavoriteError(error instanceof Error ? error.message : "Could not update saved providers."); }
+  }
+
+  const minPrice = budget === "Under ৳700" ? 0 : budget === "৳700 - ৳1,500" ? 700 : budget === "৳1,500+" ? 1500 : undefined;
+  const maxPrice = budget === "Under ৳700" ? 699 : budget === "৳700 - ৳1,500" ? 1500 : undefined;
+  const minRating = rating === "4.8+" ? 4.8 : rating === "4.5+" ? 4.5 : rating === "4.0+" ? 4 : undefined;
+  const ordering = sortBy === "Highest Rated" ? "-average_rating,-review_count" : sortBy === "Lowest Price" ? "starting_price" : sortBy === "Most Reviewed" ? "-review_count" : undefined;
+  const availableOn = availability === "Today" ? new Date().toISOString().slice(0, 10) : availability === "Tomorrow" ? new Date(Date.now() + 86400000).toISOString().slice(0, 10) : undefined;
+
+  useEffect(() => {
+    let active = true;
+    setLoading(true);
+    setApiError("");
+    searchProviders({
+      category: category === "All services" ? undefined : category,
+      area: area === "All Dhaka" ? undefined : area,
+      min_price: minPrice,
+      max_price: maxPrice,
+      min_rating: minRating,
+      identity_verified: verification === "Verified identity" ? true : undefined,
+      available_on: availableOn,
+      ordering,
+    }).then((response) => {
+      if (!active) return;
+      setApiProviders(response.results.map(adaptProvider));
+      setApiMode(response.results.length > 0);
+    }).catch((error: unknown) => {
+      if (!active) return;
+      if (error instanceof ApiError && error.status !== 0) {
+        setApiError(error.message);
+        setApiProviders([]);
+      } else {
+        setApiMode(false);
+        setApiProviders([]);
+      }
+    }).finally(() => {
+      if (active) setLoading(false);
+    });
+    return () => { active = false; };
+  }, [category, area, minPrice, maxPrice, minRating, verification, availableOn, ordering]);
 
   const visibleProviders = useMemo(() => {
-    const filtered = providers.filter((provider) => {
+    const sourceProviders = apiMode ? apiProviders : demoProviders;
+    const filtered = sourceProviders.filter((provider) => {
       const categoryMatches = category === "All services" || provider.category === category;
       const areaMatches = area === "All Dhaka" || provider.area.toLowerCase().includes(area.toLowerCase());
       const budgetMatches = budget === "Any budget"
@@ -26,7 +101,7 @@ export function SearchResults({ onSelectProvider }: { onSelectProvider: (provide
         || (budget === "৳1,500+" && provider.startingPrice > 1500);
       const ratingThreshold = rating === "4.8+" ? 4.8 : rating === "4.5+" ? 4.5 : rating === "4.0+" ? 4 : 0;
       const ratingMatches = provider.rating >= ratingThreshold;
-      const availabilityMatches = availability === "Any time" || provider.availability?.includes(availability as "Today" | "Tomorrow" | "This weekend");
+      const availabilityMatches = apiMode || availability === "Any time" || provider.availability?.includes(availability as "Today" | "Tomorrow" | "This weekend");
       const verificationMatches = verification === "All providers"
         || (verification === "Verified identity" && provider.verifiedIdentity)
         || (verification === "Work history checked" && provider.tags.some((tag) => tag.toLowerCase().includes("work history")));
@@ -37,7 +112,7 @@ export function SearchResults({ onSelectProvider }: { onSelectProvider: (provide
     if (sortBy === "Lowest Price") return filtered.sort((a, b) => a.startingPrice - b.startingPrice);
     if (sortBy === "Most Reviewed") return filtered.sort((a, b) => b.reviews - a.reviews);
     return filtered;
-  }, [area, availability, budget, category, rating, sortBy, verification]);
+  }, [apiMode, apiProviders, area, availability, budget, category, rating, sortBy, verification]);
 
   const resetFilters = () => {
     setCategory("All services");
@@ -74,23 +149,27 @@ export function SearchResults({ onSelectProvider }: { onSelectProvider: (provide
           <div>
             <p className="text-sm font-bold uppercase tracking-[0.14em] text-amber-700">Search results</p>
             <h1 className="mt-2 text-2xl font-extrabold tracking-tight text-warm-900 sm:text-3xl">Trusted home service providers in Dhaka</h1>
-            <p className="mt-2 text-sm leading-6 text-warm-600">Browse illustrative local professionals. Filters and ratings use demo records only.</p>
+            <p className="mt-2 text-sm leading-6 text-warm-600">Browse local professionals. Listings reflect live provider data when the API is available.</p>
           </div>
           <SelectField label="Sort by" options={["Recommended", "Highest Rated", "Most Reviewed", "Lowest Price"]} value={sortBy} onChange={(event) => setSortBy(event.target.value)} className="w-full md:w-56" />
         </div>
 
         <div className="mt-5 flex items-center justify-between gap-3 border-b border-warm-200 pb-3 text-sm">
           <p className="font-semibold text-warm-700" role="status">{visibleProviders.length} {visibleProviders.length === 1 ? "provider" : "providers"} found</p>
-          <span className="text-xs font-medium text-warm-500">Demo listings</span>
+          <span className="text-xs font-medium text-warm-500">{apiMode ? "Live API" : "Local demo listings"}</span>
         </div>
+
+        {apiError && <p className="mt-4 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-800" role="alert">Could not load providers: {apiError}</p>}
+        {favoriteError && <p className="mt-3 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900" role="status">{favoriteError}</p>}
+        {loading && <p className="mt-4 text-sm font-medium text-warm-600" role="status">Loading providers…</p>}
 
         <div className="mt-5 grid min-w-0 gap-4 sm:gap-5">
           {visibleProviders.map((provider) => (
-            <ProviderCard key={provider.id} provider={provider} onProfile={() => onSelectProvider(provider, "profile")} onBook={() => onSelectProvider(provider, "booking")} />
+            <ProviderCard key={provider.id} provider={provider} onProfile={() => onSelectProvider(provider, "profile")} onBook={() => onSelectProvider(provider, "booking")} onSave={() => void toggleFavorite(provider)} isSaved={savedIds.includes(provider.id)} />
           ))}
         </div>
 
-        {visibleProviders.length === 0 && (
+        {!loading && visibleProviders.length === 0 && (
           <Card className="mt-5 flex flex-col items-center gap-3 p-8 text-center" role="status">
             <SearchX className="h-8 w-8 text-amber-700" aria-hidden="true" />
             <h2 className="text-lg font-bold text-warm-900">No matching providers</h2>

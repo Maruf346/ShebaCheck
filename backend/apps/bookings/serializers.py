@@ -7,7 +7,7 @@ from .models import Booking
 
 class BookingCreateSerializer(serializers.ModelSerializer):
     provider_id = serializers.PrimaryKeyRelatedField(source="provider", queryset=ProviderProfile.objects.filter(is_active=True), write_only=True)
-    service_id = serializers.PrimaryKeyRelatedField(source="service", queryset=ProviderService.objects.filter(is_active=True), write_only=True, required=False, allow_null=True)
+    service_id = serializers.PrimaryKeyRelatedField(source="service", queryset=ProviderService.objects.filter(is_active=True), write_only=True)
 
     class Meta:
         model = Booking
@@ -25,9 +25,10 @@ class BookingCreateSerializer(serializers.ModelSerializer):
         appointment_at = attrs["appointment_at"]
         if appointment_at <= timezone.now():
             raise serializers.ValidationError({"appointment_at": "Choose a future appointment time."})
-        if service:
-            attrs["service_name"] = service.name
-            attrs["price_estimate"] = service.price
+        if not service:
+            raise serializers.ValidationError({"service_id": "Choose one of the provider's active services."})
+        attrs["service_name"] = service.name
+        attrs["price_estimate"] = service.price
         return attrs
 
     def create(self, validated_data):

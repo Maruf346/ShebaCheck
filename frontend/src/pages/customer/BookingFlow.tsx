@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from "react";
+import { ApiError, createBooking, type ApiBooking } from "../../api/client";
 import {
   ArrowLeft,
   ArrowRight,
@@ -33,6 +34,10 @@ export function BookingFlow({ provider }: { provider: Provider }) {
   });
   const [agreed, setAgreed] = useState(false);
   const [dateError, setDateError] = useState("");
+  const [bookingError, setBookingError] = useState("");
+  const [savingBooking, setSavingBooking] = useState(false);
+  const [createdBooking, setCreatedBooking] = useState<ApiBooking | null>(null);
+  const [previewOnly, setPreviewOnly] = useState(false);
   const selectedService =
     services.find((service) => service.name === details.service) ?? services[0];
   const localDate = new Intl.DateTimeFormat("en-CA", {
@@ -47,8 +52,9 @@ export function BookingFlow({ provider }: { provider: Provider }) {
     if (name === "date" || name === "time") setDateError("");
   }
 
-  function advance(event: FormEvent<HTMLFormElement>) {
+  async function advance(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    setBookingError("");
     if (
       step === 1 &&
       new Date(`${details.date}T${details.time}:00+06:00`).getTime() <=
@@ -56,6 +62,45 @@ export function BookingFlow({ provider }: { provider: Provider }) {
     ) {
       setDateError("Choose an appointment in the future (Dhaka time).");
       return;
+    }
+    if (step === 2) {
+      if (!selectedService.id) {
+        if (provider.services) {
+          setBookingError("This provider has no active service in the API, so a booking cannot be submitted yet.");
+          return;
+        }
+        setPreviewOnly(true);
+        setStep((current) => current + 1);
+        return;
+      }
+      setSavingBooking(true);
+      try {
+        const appointmentAt = new Date(`${details.date}T${details.time}:00+06:00`).toISOString();
+        const booking = await createBooking({
+          provider_id: provider.id,
+          service_id: selectedService.id,
+          service_name: selectedService.name,
+          description: details.description,
+          address: details.address,
+          area: details.area,
+          appointment_at: appointmentAt,
+          phone: details.phone,
+          access_instructions: details.access,
+          price_estimate: selectedService.price,
+        });
+        setCreatedBooking(booking);
+        setPreviewOnly(false);
+      } catch (error) {
+        if (error instanceof ApiError && error.status === 0) {
+          setPreviewOnly(true);
+          setCreatedBooking(null);
+        } else {
+          setBookingError(error instanceof Error ? error.message : "The booking request could not be submitted.");
+          setSavingBooking(false);
+          return;
+        }
+      }
+      setSavingBooking(false);
     }
     setStep((current) => current + 1);
   }
@@ -67,14 +112,16 @@ export function BookingFlow({ provider }: { provider: Provider }) {
           <p className="text-sm font-bold text-amber-700">
             Book a professional
           </p>
-          <h1 className="mt-2 text-3xl font-bold text-warm-900">
+          <h1 className="mt-2 text-2xl font-extrabold tracking-tight text-warm-900 sm:text-3xl">
             Request a service with clear terms
           </h1>
           <p className="mt-3 text-warm-700">
             Choose your service, appointment, and review the estimate.
           </p>
         </div>
-        <Badge tone="warning">Demo only, no request is sent</Badge>
+        <Badge tone={step === 3 && !previewOnly ? "success" : "warning"}>
+          {step === 3 && !previewOnly ? "Booking request submitted" : "API-backed booking request"}
+        </Badge>
       </div>
       <ol
         className="my-7 grid grid-cols-2 gap-3 sm:grid-cols-4"
@@ -101,9 +148,9 @@ export function BookingFlow({ provider }: { provider: Provider }) {
           <CheckCircle2 className="mx-auto h-12 w-12 text-brand-amber" />
           <h2 className="mt-4 text-2xl font-bold">Demo booking confirmed</h2>
           <p className="mt-3 leading-7 text-warm-700">
-            Your sample request for {selectedService.name} with {provider.name}{" "}
-            is ready. No actual appointment has been scheduled and no payment
-            has been collected.
+            {previewOnly
+              ? `Preview request for ${selectedService.name} with ${provider.name} is ready. The API was unreachable, so this request was not saved.`
+              : `Your request for ${selectedService.name} with ${provider.name} has been saved${createdBooking ? ` as booking #${createdBooking.id}` : ""}. No payment has been collected.`}
           </p>
           <p className="mt-4 font-semibold">
             {details.date} at {details.time}, Dhaka time
@@ -116,6 +163,8 @@ export function BookingFlow({ provider }: { provider: Provider }) {
             onClick={() => {
               setStep(0);
               setAgreed(false);
+              setCreatedBooking(null);
+              setPreviewOnly(false);
             }}
           >
             Make another demo booking
@@ -141,6 +190,7 @@ export function BookingFlow({ provider }: { provider: Provider }) {
               {step === 0 && (
                 <div className="grid gap-5">
                   <h2 className="text-xl font-bold">Service details</h2>
+                  {!services.some((service) => service.id) && <p className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm leading-5 text-amber-900">This provider currently has no active service in the API, so a booking cannot yet be submitted.</p>}
                   <SelectField
                     label="Service type"
                     options={services.map((service) => service.name)}
@@ -285,12 +335,14 @@ export function BookingFlow({ provider }: { provider: Provider }) {
                 )}
                 <Button
                   type="submit"
+                  disabled={savingBooking || (step === 0 && Boolean(provider.services && !services.some((service) => service.id)))}
                   icon={
                     step === 2 ? <Check size={16} /> : <ArrowRight size={16} />
                   }
                 >
-                  {step === 2 ? "Confirm demo booking" : "Continue"}
+                  {savingBooking ? "Submitting…" : step === 2 ? "Confirm booking request" : "Continue"}
                 </Button>
+                {bookingError && <p className="w-full rounded-xl border border-red-200 bg-red-50 p-3 text-sm leading-5 text-red-800" role="alert">{bookingError}</p>}
               </div>
             </Card>
           </form>
