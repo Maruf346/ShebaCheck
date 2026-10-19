@@ -33,6 +33,7 @@ export interface Provider {
   bio: string;
   tags: string[];
   portfolio: string[];
+  availability?: ("Today" | "Tomorrow" | "This weekend")[];
 }
 
 export interface Booking {

@@ -60,3 +60,27 @@ test("admin can mark a review case as reviewed", async ({ page }) => {
   await page.getByRole("button", { name: "Mark reviewed" }).first().click();
   await expect(page.getByRole("button", { name: "Reviewed" }).first()).toBeDisabled();
 });
+
+test("search filters, sorts, handles empty results, and resets", async ({ page }) => {
+  await page.goto("/search");
+  const cards = page.locator("main h3");
+  await expect(cards).toHaveCount(4);
+
+  await page.getByLabel("Category").selectOption("AC Repair");
+  await expect(cards).toHaveCount(1);
+  await expect(cards.first()).toContainText("Arman AC Service");
+
+  await page.getByLabel("Category").selectOption("All services");
+  await page.getByLabel("Availability").selectOption("This weekend");
+  await expect(cards).toHaveCount(2);
+
+  await page.getByLabel("Availability").selectOption("Any time");
+  await page.getByLabel("Sort by").selectOption("Lowest Price");
+  await expect(cards.first()).toContainText("Sheba Plumbing Works");
+
+  await page.getByLabel("Area").selectOption("Mirpur");
+  await page.getByLabel("Category").selectOption("Cleaning");
+  await expect(page.getByRole("heading", { name: "No matching providers" })).toBeVisible();
+  await page.getByRole("button", { name: "Clear filters" }).click();
+  await expect(cards).toHaveCount(4);
+});

@@ -17,7 +17,7 @@ export function DashboardShell({
   const [activeTarget, setActiveTarget] = useState(nav[0]?.target);
 
   return (
-    <main className="mx-auto grid min-w-0 max-w-7xl gap-6 px-4 py-6 text-warm-900 sm:gap-7 sm:px-6 sm:py-8 lg:px-8">
+    <main className="relative z-10 mx-auto grid min-w-0 max-w-7xl gap-6 px-4 py-5 text-brand-ink sm:gap-7 sm:px-6 sm:py-7 lg:px-8">
       <header className="flex min-w-0 flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div className="min-w-0">
           <p className="text-xs font-extrabold uppercase tracking-[0.16em] text-amber-700">{admin ? "Operations workspace" : "Your workspace"}</p>

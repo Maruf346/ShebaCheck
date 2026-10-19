@@ -38,7 +38,8 @@ export const providers: Provider[] = [
       "DB board replacement, Mirpur DOHS",
       "Kitchen lighting upgrade, Kazipara",
       "Office socket audit, Agargaon"
-    ]
+    ],
+    availability: ["Today", "Tomorrow"]
   },
   {
     id: 2,
@@ -60,7 +61,8 @@ export const providers: Provider[] = [
       "Move-in cleaning, Dhanmondi 27",
       "Kitchen deep clean, Green Road",
       "Monthly apartment cleaning, Jigatola"
-    ]
+    ],
+    availability: ["Today", "This weekend"]
   },
   {
     id: 3,
@@ -82,7 +84,8 @@ export const providers: Provider[] = [
       "AC gas pressure service, Uttara Sector 7",
       "Water leakage repair, Airport Road",
       "Pre-season maintenance, Sector 11"
-    ]
+    ],
+    availability: ["Tomorrow", "This weekend"]
   },
   {
     id: 4,
@@ -104,7 +107,8 @@ export const providers: Provider[] = [
       "Bathroom leak repair, Mohammadpur",
       "Kitchen basin fitting, Tajmahal Road",
       "Rooftop water line check, Lalmatia"
-    ]
+    ],
+    availability: ["Today"]
   }
 ];
 

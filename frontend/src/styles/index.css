@@ -61,9 +61,9 @@ img {
 }
 
 .surface {
-  @apply rounded-2xl border border-warm-200 bg-white shadow-soft;
+  @apply rounded-3xl border border-white bg-white shadow-home-panel md:rounded-panel;
 }
 
 .admin-surface {
-  @apply rounded-2xl border border-warm-200 bg-white shadow-home-panel;
+  @apply rounded-3xl border border-white bg-white shadow-home-panel md:rounded-panel;
 }

@@ -61,7 +61,7 @@ export function BookingFlow({ provider }: { provider: Provider }) {
   }
 
   return (
-    <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
+    <main className="relative z-10 mx-auto max-w-6xl px-4 py-5 sm:px-6 sm:py-7 lg:px-8">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <p className="text-sm font-bold text-amber-700">
@@ -84,10 +84,10 @@ export function BookingFlow({ provider }: { provider: Provider }) {
           <li
             key={label}
             aria-current={index === step ? "step" : undefined}
-            className={`flex items-center gap-3 rounded-xl border p-3 ${index === step ? "border-amber-400 bg-amber-50" : "border-warm-200 bg-white"}`}
+            className={`flex items-center gap-2 rounded-2xl border p-3 sm:gap-3 sm:p-4 ${index === step ? "border-amber-300 bg-amber-50 shadow-home-panel" : "border-white bg-white"}`}
           >
             <span
-              className={`grid h-8 w-8 shrink-0 place-items-center rounded-full text-sm font-bold ${index <= step ? "bg-brand-amber text-white" : "bg-warm-100 text-warm-700"}`}
+              className={`grid h-8 w-8 shrink-0 place-items-center rounded-full text-sm font-bold ${index <= step ? "bg-brand-amber text-white shadow-home-button" : "bg-warm-100 text-warm-700"}`}
             >
               {index < step ? <Check size={16} /> : index + 1}
             </span>
@@ -124,7 +124,7 @@ export function BookingFlow({ provider }: { provider: Provider }) {
       ) : (
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
           <form onSubmit={advance}>
-            <Card className="p-6">
+            <Card className="p-4 sm:p-6">
               <div className="mb-6 flex items-center gap-4">
                 <img
                   src={provider.image}
@@ -295,7 +295,7 @@ export function BookingFlow({ provider }: { provider: Provider }) {
             </Card>
           </form>
           <aside className="h-fit">
-            <Card className="p-6">
+            <Card className="p-4 sm:p-6">
               <h2 className="flex items-center gap-3 text-xl font-bold">
                 <CalendarDays className="text-amber-700" size={24} />
                 Booking summary

@@ -35,7 +35,7 @@ export function AppShell({
   if (page === "home") return <>{children}</>;
 
   return (
-    <div className="min-h-screen bg-warm-50">
+    <div className="relative min-h-screen overflow-x-clip bg-home-canvas pb-8 font-sans text-brand-ink md:pb-12">
       <header className="sticky top-3 z-50 mx-auto max-w-marketplace px-4 md:top-4 md:px-8">
         <div className="flex min-h-16 items-center gap-3 rounded-full border border-white bg-white px-4 py-2.5 shadow-home-header md:min-h-[70px] md:gap-5 md:px-5 md:py-3 wide:gap-8 wide:px-6">
           <button

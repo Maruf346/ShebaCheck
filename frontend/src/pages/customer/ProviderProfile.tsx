@@ -10,7 +10,7 @@ import { SectionHeading } from "../../components/ui/SectionHeading";
 export function ProviderProfile({ setPage, provider }: { setPage: (page: AppPage) => void; provider: Provider }) {
   const servicePrices = getBookingServices(provider).map((service) => ({ ...service, price: `\u09f3${service.price}`, note: "Starting estimate. Parts quoted separately; demo pricing." }));
   return (
-    <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+    <main className="relative z-10 mx-auto max-w-7xl px-4 py-5 sm:px-6 sm:py-7 lg:px-8">
       <Card className="overflow-hidden">
         <div className="grid lg:grid-cols-[360px_1fr]">
           <img src={provider.image} alt={`${provider.name} work profile`} className="h-80 w-full object-cover lg:h-full" />
