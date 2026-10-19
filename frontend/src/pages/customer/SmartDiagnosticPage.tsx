@@ -101,16 +101,15 @@ export function SmartDiagnosticPage({ setPage }: SmartDiagnosticPageProps) {
   return (
     <main className="mx-auto max-w-marketplace px-4 py-8 md:px-8 md:py-12">
       {/* Hero Banner */}
-      <div className="relative overflow-hidden rounded-3xl border border-amber-200/60 bg-gradient-to-br from-amber-500/10 via-amber-100/40 to-stone-50 p-6 md:p-10 shadow-home-panel">
-        <div className="absolute top-0 right-0 -mr-16 -mt-16 size-72 rounded-full bg-amber-400/20 blur-3xl pointer-events-none" />
+      <div className="relative overflow-hidden rounded-3xl border border-white bg-white p-6 md:p-10 shadow-home-panel md:rounded-panel">
         <div className="relative z-10 max-w-3xl">
-          <div className="inline-flex items-center gap-2 rounded-full border border-amber-300 bg-amber-100/80 px-3.5 py-1 text-xs font-bold text-amber-900 mb-4 shadow-sm">
+          <div className="inline-flex items-center gap-2 rounded-full border border-amber-200 bg-amber-50 px-3.5 py-1 text-xs font-bold text-amber-900 mb-4 shadow-xs">
             <Sparkles className="size-3.5 text-amber-600 animate-pulse" />
             Machine Learning Diagnostic &amp; Fair-Price Estimator
           </div>
           <h1 className="text-3xl md:text-4xl lg:text-5xl font-black text-brand-ink tracking-tight leading-[1.15]">
             Describe your repair problem. <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-600 to-amber-700">
+            <span className="text-amber-600">
               Get ML cost range &amp; top technicians.
             </span>
           </h1>
