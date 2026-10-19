@@ -1,10 +1,12 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { motion } from "framer-motion";
 import {
+  ArrowRight,
   BadgeCheck,
   History,
   SearchX,
   ShieldCheck,
+  Sparkles,
   Star,
   ThumbsUp,
 } from "lucide-react";
@@ -324,6 +326,39 @@ export function CustomerHome({ setPage, onSelectProvider }: CustomerHomeProps) {
             </motion.button>
           ))}
         </motion.section>
+
+        <motion.div
+          className="flex flex-col md:flex-row items-center justify-between gap-5 rounded-3xl border border-amber-200/70 bg-gradient-to-r from-amber-500/10 via-amber-100/30 to-white p-6 md:p-8 shadow-home-panel"
+          variants={reveal}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.2 }}
+        >
+          <div className="flex items-start md:items-center gap-4">
+            <div className="grid size-12 shrink-0 place-items-center rounded-2xl bg-amber-500 text-white shadow-md shadow-amber-500/20">
+              <Sparkles className="size-6" />
+            </div>
+            <div>
+              <span className="text-[11px] font-extrabold uppercase tracking-wider text-amber-700">
+                New &bull; Machine Learning Diagnostics
+              </span>
+              <h2 className="text-xl md:text-2xl font-black text-brand-ink">
+                Not sure about repair costs? Ask our AI Fair-Price Estimator
+              </h2>
+              <p className="text-xs md:text-sm text-stone-600 mt-1 max-w-2xl">
+                Describe the problem in plain words. Our NLP model estimates realistic Dhaka labor costs, parts, and matches certified technicians.
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => setPage("ai-diagnostic")}
+            className="shrink-0 inline-flex items-center gap-2 rounded-2xl bg-brand-ink px-5 py-3 text-xs md:text-sm font-bold text-amber-300 shadow-md hover:bg-black transition-colors"
+          >
+            Try AI Estimator
+            <ArrowRight className="size-4" />
+          </button>
+        </motion.div>
 
         <section
           className="flex flex-col gap-6"

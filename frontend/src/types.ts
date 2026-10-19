@@ -10,7 +10,8 @@ export type AppPage =
   | "booking"
   | "customer-dashboard"
   | "provider-dashboard"
-  | "admin-dashboard";
+  | "admin-dashboard"
+  | "ai-diagnostic";
 
 export type StatusTone = "success" | "warning" | "neutral" | "danger" | "info";
 

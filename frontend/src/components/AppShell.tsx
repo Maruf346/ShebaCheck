@@ -1,4 +1,4 @@
-import { BriefcaseBusiness, CalendarDays, Gauge, Menu, Search, ShieldCheck, UserRound, X } from "lucide-react";
+import { BriefcaseBusiness, CalendarDays, Gauge, Menu, Search, ShieldCheck, Sparkles, UserRound, X } from "lucide-react";
 import { useState } from "react";
 import { useAuth } from "../auth/AuthProvider";
 import type { AppPage } from "../types";
@@ -7,6 +7,7 @@ import { Button } from "./ui/Button";
 
 const links: { label: string; page: AppPage; icon: typeof Search }[] = [
   { label: "Find Services", page: "search", icon: Search },
+  { label: "AI Estimator", page: "ai-diagnostic", icon: Sparkles },
   { label: "How It Works", page: "home", icon: ShieldCheck },
   { label: "Become a Provider", page: "provider-register", icon: BriefcaseBusiness },
   { label: "Create account", page: "register", icon: UserRound },

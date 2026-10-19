@@ -6,6 +6,7 @@ import {
   Menu,
   Search,
   ShieldCheck,
+  Sparkles,
   UserRound,
   X,
 } from "lucide-react";
@@ -80,6 +81,14 @@ export function HomeHeader({
               {label}
             </a>
           ))}
+          <button
+            type="button"
+            className="inline-flex items-center gap-1.5 rounded-full border border-amber-300 bg-amber-50 px-3 py-1 text-xs font-bold text-amber-900 transition-colors hover:bg-amber-100 shadow-xs"
+            onClick={() => setPage("ai-diagnostic")}
+          >
+            <Sparkles className="size-3.5 text-amber-600" aria-hidden="true" />
+            AI Estimator
+          </button>
         </nav>
         <div className="ml-auto flex items-center gap-2 md:gap-3">
           <HomeDropdown
@@ -145,6 +154,17 @@ export function HomeHeader({
               {label}
             </a>
           ))}
+          <button
+            type="button"
+            className="inline-flex items-center gap-3 text-amber-800"
+            onClick={() => {
+              setMenuOpen(false);
+              setPage("ai-diagnostic");
+            }}
+          >
+            <Sparkles className="h-4 w-4 text-amber-600" aria-hidden="true" />
+            AI Price Estimator
+          </button>
           <button
             className="inline-flex items-center gap-3"
             onClick={() => {

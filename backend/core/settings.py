@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     "apps.bookings.apps.BookingsConfig",
     "apps.reviews.apps.ReviewsConfig",
     "apps.support.apps.SupportConfig",
+    "apps.ml_estimator.apps.MlEstimatorConfig",
 ]
 
 MIDDLEWARE = [

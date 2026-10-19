@@ -13,6 +13,7 @@ import { ProviderProfile } from "./pages/customer/ProviderProfile";
 import { SearchResults } from "./pages/customer/SearchResults";
 import { ProviderDashboard } from "./pages/provider/ProviderDashboard";
 import { AuthPage } from "./pages/auth/AuthPage";
+import { SmartDiagnosticPage } from "./pages/customer/SmartDiagnosticPage";
 import type { AppPage, Provider } from "./types";
 
 const pagePaths: Record<AppPage, string> = {
@@ -26,6 +27,7 @@ const pagePaths: Record<AppPage, string> = {
   "customer-dashboard": "/customer-dashboard",
   "provider-dashboard": "/provider-dashboard",
   "admin-dashboard": "/admin-dashboard",
+  "ai-diagnostic": "/diagnostic",
 };
 
 function getPageFromPath(pathname: string): AppPage | null {
@@ -124,6 +126,8 @@ export default function App() {
         return <ProviderDashboard />;
       case "admin-dashboard":
         return <AdminDashboard />;
+      case "ai-diagnostic":
+        return <SmartDiagnosticPage setPage={navigate} onSelectProvider={selectProvider} />;
       case "home":
       default:
         return (

@@ -398,3 +398,46 @@ export function saveFavoriteProvider(provider_id: number) {
 export function removeFavoriteProvider(id: number) {
   return apiRequest<void>(`/providers/favorites/${id}/`, { method: "DELETE" });
 }
+
+export interface MatchedProvider {
+  id: number;
+  name: string;
+  category: string;
+  area: string;
+  rating: number;
+  review_count: number;
+  starting_price: string | number;
+  image_url: string;
+  identity_verified: boolean;
+  response_time: string;
+  years_experience: number;
+  match_score: number;
+  service_id: number | null;
+  service_name: string;
+  service_price: string | number | null;
+}
+
+export interface JobEstimateResponse {
+  query: string;
+  predicted_category: string;
+  confidence: number;
+  category_probabilities: Record<string, number>;
+  service_label: string;
+  diagnostic_summary: string;
+  price_estimate: number;
+  price_min: number;
+  price_max: number;
+  duration_minutes: number;
+  complexity: string;
+  recommended_parts: string[];
+  similarity_score: number;
+  matched_providers: MatchedProvider[];
+}
+
+export function estimateJobCost(payload: { problem_description: string; area?: string }) {
+  return apiRequest<JobEstimateResponse>("/ml/estimate/", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
