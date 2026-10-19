@@ -166,8 +166,20 @@ class ProviderOwnedModelViewSet(viewsets.ModelViewSet):
         if getattr(self, "swagger_fake_view", False):
             return self.model.objects.none()
         queryset = self.model.objects.select_related("provider", "provider__user")
+
+        provider_id = self.request.query_params.get("provider")
+        if provider_id:
+            return queryset.filter(provider_id=provider_id, provider__is_active=True)
+
+        if self.request.user.is_authenticated:
+            if getattr(self.request.user, "role", None) == "provider" or self.request.query_params.get("mine") == "true":
+                return queryset.filter(provider__user=self.request.user)
+
         if self.request.method in ("POST", "PUT", "PATCH", "DELETE"):
-            return queryset.filter(provider__user=self.request.user)
+            if self.request.user.is_authenticated:
+                return queryset.filter(provider__user=self.request.user)
+            return self.model.objects.none()
+
         return queryset.filter(provider__is_active=True, is_published=True) if self.model is PortfolioItem else queryset.filter(provider__is_active=True, is_active=True)
 
     def perform_create(self, serializer):

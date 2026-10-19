@@ -18,6 +18,7 @@ import {
   ShieldAlert,
   ShieldCheck,
   Sparkles,
+  Trash2,
   Upload,
   UserCheck,
   XCircle,
@@ -27,6 +28,9 @@ import {
   createAvailabilityBlock,
   createPortfolioItem,
   createProviderService,
+  deleteAvailabilityBlock,
+  deletePortfolioItem,
+  deleteProviderService,
   getBookingSummary,
   getMyProviderProfile,
   listAvailabilityBlocks,
@@ -85,6 +89,9 @@ export function ProviderDashboard() {
   const [editingServiceId, setEditingServiceId] = useState<number | null>(null);
   const [serviceSaved, setServiceSaved] = useState(false);
   const [reviewReply, setReviewReply] = useState("");
+  const [deletingServiceId, setDeletingServiceId] = useState<number | null>(null);
+  const [deletingPortfolioId, setDeletingPortfolioId] = useState<number | null>(null);
+  const [deletingAvailabilityId, setDeletingAvailabilityId] = useState<number | null>(null);
   const [nidScanning, setNidScanning] = useState(false);
   const [ocrResult, setOcrResult] = useState<NidVerificationResponse | null>(null);
   const [ocrError, setOcrError] = useState("");
@@ -189,6 +196,20 @@ export function ProviderDashboard() {
     }).catch((error: unknown) => setActionError(error instanceof Error ? error.message : "Could not save unavailable date."));
   }
 
+  async function removeAvailabilityBlock(blockId: number) {
+    setDeletingAvailabilityId(blockId);
+    setActionError("");
+    try {
+      await deleteAvailabilityBlock(blockId);
+      setUnavailableDates((current) => current.filter((d) => d.id !== blockId));
+      setActionMessage("Unavailable date removed.");
+    } catch (error) {
+      setActionError(error instanceof Error ? error.message : "Could not remove unavailable date.");
+    } finally {
+      setDeletingAvailabilityId(null);
+    }
+  }
+
   function addPortfolioItem(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const item = portfolioDraft.trim();
@@ -198,6 +219,21 @@ export function ProviderDashboard() {
       setPortfolioDraft("");
       setActionMessage("Portfolio item added.");
     }).catch((error: unknown) => setActionError(error instanceof Error ? error.message : "Could not save portfolio item."));
+  }
+
+  async function removePortfolioItem(itemId: number) {
+    if (!window.confirm("Delete this portfolio item?")) return;
+    setDeletingPortfolioId(itemId);
+    setActionError("");
+    try {
+      await deletePortfolioItem(itemId);
+      setPortfolio((current) => current.filter((item) => item.id !== itemId));
+      setActionMessage("Portfolio item deleted.");
+    } catch (error) {
+      setActionError(error instanceof Error ? error.message : "Could not delete this portfolio item.");
+    } finally {
+      setDeletingPortfolioId(null);
+    }
   }
 
   async function saveService(event: FormEvent<HTMLFormElement>) {
@@ -210,6 +246,25 @@ export function ProviderDashboard() {
       setServices((current) => editingServiceId ? current.map((service) => service.id === saved.id ? saved : service) : [...current, saved]);
       setServiceName(""); setServicePrice(""); setServiceDescription(""); setEditingServiceId(null); setServiceEditing(false); setServiceSaved(true);
     } catch (error) { setActionError(error instanceof Error ? error.message : "Could not save this service."); }
+  }
+
+  async function removeService(serviceId: number) {
+    if (!window.confirm("Are you sure you want to delete this service offering?")) return;
+    setDeletingServiceId(serviceId);
+    setActionError("");
+    try {
+      await deleteProviderService(serviceId);
+      setServices((current) => current.filter((s) => s.id !== serviceId));
+      if (editingServiceId === serviceId) {
+        setEditingServiceId(null);
+        setServiceEditing(false);
+      }
+      setActionMessage("Service deleted successfully from database.");
+    } catch (error) {
+      setActionError(error instanceof Error ? error.message : "Could not delete this service.");
+    } finally {
+      setDeletingServiceId(null);
+    }
   }
 
   async function sendReviewReply(reviewId: number, event: FormEvent<HTMLFormElement>) {
@@ -267,15 +322,63 @@ export function ProviderDashboard() {
         </div>
       </Card>
 
-      <div className="grid min-w-0 gap-5 xl:grid-cols-2">
+      <div className="grid min-w-0 gap-5 xl:grid-cols-2 items-start">
         <Card id="provider-services" className="scroll-mt-28 p-4 sm:p-6">
           <div className="flex items-start justify-between gap-4"><div><p className="text-xs font-extrabold uppercase tracking-[0.14em] text-amber-700">Offerings</p><h2 className="mt-1 text-lg font-bold text-warm-900 sm:text-xl">Services and prices</h2></div><Button variant="secondary" onClick={() => { setServiceEditing((editing) => !editing); setEditingServiceId(null); setServiceName(""); setServicePrice(""); setServiceDescription(""); setServiceSaved(false); }}>{serviceEditing ? "Cancel" : "Add service"}</Button></div>
-          <div className="mt-4 grid gap-3">{services.map((service) => <div key={service.id} className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-warm-200 bg-white p-3"><div><p className="font-bold text-warm-900">{service.name}</p><p className="text-xs text-warm-600">{service.description || "No description"} · ৳{service.price}</p></div><Button variant="secondary" onClick={() => { setEditingServiceId(service.id); setServiceName(service.name); setServicePrice(service.price); setServiceDescription(service.description); setServiceEditing(true); }}>Edit</Button></div>)}
-          {!services.length && <p className="rounded-xl border border-dashed border-warm-200 bg-warm-50 p-4 text-sm text-warm-600">No services published yet.</p>}</div>
-          {serviceEditing && <form className="mt-4 grid gap-3" onSubmit={saveService}><InputField label="Service name" required value={serviceName} onChange={(event) => setServiceName(event.target.value)} /><InputField label="Starting price (BDT)" required type="number" min="0" step="0.01" value={servicePrice} onChange={(event) => setServicePrice(event.target.value)} /><label className="grid gap-1.5 text-sm font-semibold text-warm-800">Description<textarea value={serviceDescription} onChange={(event) => setServiceDescription(event.target.value)} className="focus-ring min-h-20 rounded-xl border border-warm-200 p-3 text-sm font-normal" /></label><Button type="submit"><Save className="h-4 w-4" aria-hidden="true" />Save service</Button></form>}
+          <div className="mt-4 grid gap-3">
+            {services.map((service) => (
+              <div key={service.id} className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-warm-200 bg-white p-3">
+                <div className="min-w-0 flex-1">
+                  <p className="font-bold text-warm-900">{service.name}</p>
+                  <p className="text-xs text-warm-600 truncate">{service.description || "No description"} &bull; &#2547;{service.price}</p>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  <Button variant="secondary" onClick={() => { setEditingServiceId(service.id); setServiceName(service.name); setServicePrice(service.price); setServiceDescription(service.description); setServiceEditing(true); }}>Edit</Button>
+                  <button
+                    type="button"
+                    disabled={deletingServiceId === service.id}
+                    onClick={() => void removeService(service.id)}
+                    className="focus-ring inline-flex size-9 items-center justify-center rounded-xl border border-warm-200 text-stone-400 hover:border-red-200 hover:bg-red-50 hover:text-red-700 transition-colors disabled:opacity-50"
+                    title={`Delete ${service.name}`}
+                    aria-label={`Delete ${service.name}`}
+                  >
+                    {deletingServiceId === service.id ? <RefreshCcw className="size-4 animate-spin text-amber-700" /> : <Trash2 className="size-4" />}
+                  </button>
+                </div>
+              </div>
+            ))}
+            {!services.length && <p className="rounded-xl border border-dashed border-warm-200 bg-warm-50 p-4 text-sm text-warm-600">No services published yet. Click &quot;Add service&quot; to list your offerings.</p>}
+          </div>
+          {serviceEditing && (
+            <form className="mt-4 grid gap-3" onSubmit={saveService}>
+              <InputField label="Service name" required value={serviceName} onChange={(event) => setServiceName(event.target.value)} />
+              <InputField label="Starting price (BDT)" required type="number" min="0" step="0.01" value={servicePrice} onChange={(event) => setServicePrice(event.target.value)} />
+              <label className="grid gap-1.5 text-sm font-semibold text-warm-800">
+                Description
+                <textarea value={serviceDescription} onChange={(event) => setServiceDescription(event.target.value)} className="focus-ring min-h-20 rounded-xl border border-warm-200 p-3 text-sm font-normal" />
+              </label>
+              <div className="flex flex-wrap items-center gap-2">
+                <Button type="submit"><Save className="h-4 w-4" aria-hidden="true" />{editingServiceId ? "Update service" : "Save service"}</Button>
+                {editingServiceId && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    disabled={deletingServiceId === editingServiceId}
+                    className="text-red-600 hover:bg-red-50 hover:text-red-700"
+                    onClick={() => void removeService(editingServiceId)}
+                  >
+                    {deletingServiceId === editingServiceId ? <RefreshCcw className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" aria-hidden="true" />}
+                    Delete service
+                  </Button>
+                )}
+              </div>
+            </form>
+          )}
           {serviceSaved && <p className="mt-3 text-sm font-semibold text-amber-900" role="status">Service saved.</p>}
         </Card>
-        <Card id="provider-verification" className="scroll-mt-28 p-4 sm:p-6">
+
+        <div className="flex flex-col gap-5">
+          <Card id="provider-verification" className="scroll-mt-28 p-4 sm:p-6">
           <div className="flex flex-wrap items-start justify-between gap-3 border-b border-warm-100 pb-4">
             <div>
               <div className="inline-flex items-center gap-1.5 rounded-full border border-amber-300 bg-amber-50 px-2.5 py-0.5 text-[11px] font-extrabold uppercase tracking-wider text-amber-900 mb-1">
@@ -422,21 +525,86 @@ export function ProviderDashboard() {
             </div>
           )}
         </Card>
-      </div>
 
-      <div className="grid min-w-0 gap-5 xl:grid-cols-2">
         <Card id="provider-availability" className="scroll-mt-28 p-4 sm:p-6">
-          <div className="flex items-start justify-between gap-3"><div><p className="text-xs font-extrabold uppercase tracking-[0.14em] text-amber-700">Schedule</p><h2 className="mt-1 text-lg font-bold text-warm-900 sm:text-xl">Availability</h2></div><CalendarClock className="h-5 w-5 text-amber-700" aria-hidden="true" /></div>
-          <p className="mt-2 text-sm leading-6 text-warm-600">Keep your schedule current so customers can request a time that works.</p>
-          {availabilityFormOpen && <form className="mt-4 flex flex-col gap-3 sm:flex-row" onSubmit={addUnavailableDate}><label className="grid flex-1 gap-1.5 text-xs font-bold text-warm-700">Unavailable date<input name="unavailable-date" type="date" required min={new Date().toISOString().slice(0, 10)} className="focus-ring min-h-11 rounded-xl border border-warm-200 bg-white px-3 text-sm" /></label><Button className="self-end" type="submit">Add date</Button></form>}
-          <div className="mt-4 flex flex-wrap gap-2">{unavailableDates.length ? unavailableDates.map((date) => <Badge key={date.id} tone="warning">Unavailable · {date.date}</Badge>) : <Badge tone="success">Accepting requests</Badge>}</div>
-        </Card>
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="text-xs font-extrabold uppercase tracking-[0.14em] text-amber-700">Schedule</p>
+                <h2 className="mt-1 text-lg font-bold text-warm-900 sm:text-xl">Availability</h2>
+              </div>
+              <Button
+                variant="secondary"
+                onClick={() => setAvailabilityFormOpen((open) => !open)}
+              >
+                {availabilityFormOpen ? "Cancel" : "Block date"}
+              </Button>
+            </div>
+            <p className="mt-2 text-sm leading-6 text-warm-600">Keep your schedule current so customers can request a time that works.</p>
+            {availabilityFormOpen && (
+              <form className="mt-4 flex flex-col gap-3 sm:flex-row" onSubmit={addUnavailableDate}>
+                <label className="grid flex-1 gap-1.5 text-xs font-bold text-warm-700">
+                  Unavailable date
+                  <input name="unavailable-date" type="date" required min={new Date().toISOString().slice(0, 10)} className="focus-ring min-h-11 rounded-xl border border-warm-200 bg-white px-3 text-sm" />
+                </label>
+                <Button className="self-end" type="submit">Add date</Button>
+              </form>
+            )}
+            <div className="mt-4 flex flex-wrap gap-2">
+              {unavailableDates.length ? (
+                unavailableDates.map((date) => (
+                  <span
+                    key={date.id}
+                    className="inline-flex items-center gap-1.5 rounded-full border border-amber-300 bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-900"
+                  >
+                    Unavailable &bull; {date.date}
+                    <button
+                      type="button"
+                      disabled={deletingAvailabilityId === date.id}
+                      onClick={() => void removeAvailabilityBlock(date.id)}
+                      className="ml-0.5 rounded-full p-0.5 text-amber-700 hover:bg-amber-200 hover:text-amber-950 transition-colors"
+                      title="Remove blocked date"
+                    >
+                      <Trash2 className="size-3" />
+                    </button>
+                  </span>
+                ))
+              ) : (
+                <Badge tone="success">Accepting requests</Badge>
+              )}
+            </div>
+          </Card>
 
-        <Card id="provider-portfolio" className="scroll-mt-28 p-4 sm:p-6">
-          <div><p className="text-xs font-extrabold uppercase tracking-[0.14em] text-amber-700">Work samples</p><h2 className="mt-1 text-lg font-bold text-warm-900 sm:text-xl">Portfolio</h2></div>
-          <div className="mt-4 grid gap-2 sm:grid-cols-2">{portfolio.map((item) => <div key={item.id} className="flex min-w-0 items-start gap-2 rounded-xl border border-warm-200 bg-warm-50 p-3 text-sm font-medium leading-5 text-warm-700"><Image className="mt-0.5 h-4 w-4 shrink-0 text-amber-700" aria-hidden="true" />{item.title}</div>)}</div>
-          <form className="mt-4 flex flex-col gap-2 sm:flex-row" onSubmit={addPortfolioItem}><input aria-label="Portfolio project description" value={portfolioDraft} onChange={(event) => setPortfolioDraft(event.target.value)} className="focus-ring min-h-11 min-w-0 flex-1 rounded-xl border border-warm-200 px-3 text-sm" placeholder="Add a completed project" /><Button type="submit"><Plus className="h-4 w-4" aria-hidden="true" />Add sample</Button></form>
-        </Card>
+          <Card id="provider-portfolio" className="scroll-mt-28 p-4 sm:p-6">
+            <div>
+              <p className="text-xs font-extrabold uppercase tracking-[0.14em] text-amber-700">Work samples</p>
+              <h2 className="mt-1 text-lg font-bold text-warm-900 sm:text-xl">Portfolio</h2>
+            </div>
+            <div className="mt-4 grid gap-2 sm:grid-cols-2">
+              {portfolio.map((item) => (
+                <div key={item.id} className="flex min-w-0 items-center justify-between gap-2 rounded-xl border border-warm-200 bg-warm-50 p-3 text-sm font-medium leading-5 text-warm-700">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <Image className="mt-0.5 h-4 w-4 shrink-0 text-amber-700" aria-hidden="true" />
+                    <span className="truncate">{item.title}</span>
+                  </div>
+                  <button
+                    type="button"
+                    disabled={deletingPortfolioId === item.id}
+                    onClick={() => void removePortfolioItem(item.id)}
+                    className="shrink-0 p-1 text-stone-400 hover:text-red-700 transition-colors"
+                    title={`Delete ${item.title}`}
+                  >
+                    <Trash2 className="size-3.5" />
+                  </button>
+                </div>
+              ))}
+              {!portfolio.length && <p className="col-span-2 text-xs text-warm-500">No portfolio projects uploaded yet.</p>}
+            </div>
+            <form className="mt-4 flex flex-col gap-2 sm:flex-row" onSubmit={addPortfolioItem}>
+              <input aria-label="Portfolio project description" value={portfolioDraft} onChange={(event) => setPortfolioDraft(event.target.value)} className="focus-ring min-h-11 min-w-0 flex-1 rounded-xl border border-warm-200 px-3 text-sm" placeholder="Add a completed project" />
+              <Button type="submit"><Plus className="h-4 w-4" aria-hidden="true" />Add sample</Button>
+            </form>
+          </Card>
+        </div>
       </div>
 
       <Card id="provider-reviews" className="scroll-mt-28 p-4 sm:p-6">

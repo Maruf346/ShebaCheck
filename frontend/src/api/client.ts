@@ -357,6 +357,10 @@ export function updateProviderService(id: number, payload: Partial<{ name: strin
   return apiRequest<ApiProviderService>(`/providers/services/${id}/`, { method: "PATCH", body: JSON.stringify(payload) });
 }
 
+export function deleteProviderService(id: number) {
+  return apiRequest<void>(`/providers/services/${id}/`, { method: "DELETE" });
+}
+
 export function listAvailabilityBlocks() {
   return apiRequest<Paginated<{ id: number; date: string; reason: string }>>("/providers/availability/");
 }
