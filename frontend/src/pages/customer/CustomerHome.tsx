@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { motion } from "framer-motion";
 import {
   BadgeCheck,
@@ -15,18 +15,26 @@ import { HomeHero } from "../../components/home/HomeHero";
 import { HomeMobileNav } from "../../components/home/HomeMobileNav";
 import { TechnicianCard } from "../../components/home/TechnicianCard";
 import {
-  featuredTechnician,
-  homeTechnicians,
   homeTestimonials,
   homeZones,
   locationZones,
   protectionSteps,
   type HomeDialogKind,
+  type HomeTechnician,
 } from "../../data/homeContent";
 import type { AppPage, Provider } from "../../types";
-import { ApiError, listFavoriteProviders, removeFavoriteProvider, saveFavoriteProvider, searchProviders } from "../../api/client";
+import { ApiError, listFavoriteProviders, listReviews, removeFavoriteProvider, saveFavoriteProvider, searchProviders, type ApiReview } from "../../api/client";
 import { useAuth } from "../../auth/AuthProvider";
 import { adaptHomeTechnician } from "../../api/adapters";
+
+function getInitials(name: string) {
+  return name
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((w) => w[0].toUpperCase())
+    .join("");
+}
 
 const reveal = {
   hidden: { opacity: 0, y: 18 },
@@ -53,10 +61,11 @@ function getSavedService() {
 export function CustomerHome({ setPage, onSelectProvider }: CustomerHomeProps) {
   const { user } = useAuth();
   const [favoriteProviderIds, setFavoriteProviderIds] = useState<number[]>([]);
-  const [apiTechnicians, setApiTechnicians] = useState<typeof homeTechnicians>([]);
+  const [apiTechnicians, setApiTechnicians] = useState<HomeTechnician[]>([]);
   const [apiAvailable, setApiAvailable] = useState(false);
   const [apiLoading, setApiLoading] = useState(true);
   const [apiMessage, setApiMessage] = useState("");
+  const [liveReviews, setLiveReviews] = useState<ApiReview[]>([]);
   const [category, setCategory] = useState("All");
   const [zone, setZone] = useState("All Zones");
   const [location, setLocation] = useState("Gulshan 1 & 2");
@@ -86,6 +95,22 @@ export function CustomerHome({ setPage, onSelectProvider }: CustomerHomeProps) {
   }, []);
 
   useEffect(() => {
+    let active = true;
+    listReviews()
+      .then((page) => {
+        if (!active) return;
+        // Take up to 3 reviews with a body, preferring highest-rated
+        const sorted = [...page.results]
+          .filter((r) => r.body && r.body.trim().length > 20)
+          .sort((a, b) => b.rating - a.rating)
+          .slice(0, 3);
+        setLiveReviews(sorted);
+      })
+      .catch(() => undefined);
+    return () => { active = false; };
+  }, []);
+
+  useEffect(() => {
     if (!user || user.role !== "customer") return;
     listFavoriteProviders()
       .then((page) => {
@@ -95,7 +120,30 @@ export function CustomerHome({ setPage, onSelectProvider }: CustomerHomeProps) {
       .catch(() => undefined);
   }, [user, apiTechnicians]);
 
-  const technicians = apiAvailable && apiTechnicians.length ? apiTechnicians : homeTechnicians;
+  const technicians = apiTechnicians;
+
+  const reviewsToDisplay = useMemo(() => {
+    const liveItems = liveReviews.map((r) => ({
+      key: `live-${r.id}`,
+      name: r.customer_name,
+      initials: getInitials(r.customer_name),
+      detail: `${r.provider_name ? `${r.provider_name} • ` : ""}Verified booking`,
+      quote: r.body,
+      rating: r.rating,
+    }));
+    if (liveItems.length >= 3) {
+      return liveItems.slice(0, 3);
+    }
+    const fallbackItems = homeTestimonials.map((t) => ({ key: `static-${t.name}`, ...t, rating: 5 }));
+    const combined = [...liveItems];
+    for (const item of fallbackItems) {
+      if (combined.length >= 3) break;
+      if (!combined.some((c) => c.name === item.name)) {
+        combined.push(item);
+      }
+    }
+    return combined.slice(0, 3);
+  }, [liveReviews]);
 
   const filtered = technicians.filter((technician) => {
     const words =
@@ -337,7 +385,7 @@ export function CustomerHome({ setPage, onSelectProvider }: CustomerHomeProps) {
                 key={technician.id}
                 variants={reveal}
                 transition={{ duration: 0.35, ease: "easeOut" }}
-                className="min-w-0"
+                className="min-w-0 h-full"
               >
                 <TechnicianCard
                   technician={technician}
@@ -430,11 +478,11 @@ export function CustomerHome({ setPage, onSelectProvider }: CustomerHomeProps) {
               Only verified booking accounts can review
             </p>
           </div>
-          <div className="grid grid-cols-1 gap-4 md:gap-6 lg:grid-cols-3">
-            {homeTestimonials.map(({ name, initials, detail, quote }) => (
+          <div className="grid grid-cols-1 gap-4 md:gap-6 lg:grid-cols-3 items-stretch">
+            {reviewsToDisplay.map(({ key, name, initials, detail, quote, rating }) => (
               <motion.figure
-                className="m-0 flex flex-col p-6 lg:min-h-[313px] [&_blockquote]:mb-5 [&_blockquote]:text-sm [&_blockquote]:leading-[23px] [&_blockquote]:font-medium [&_blockquote]:italic [&_blockquote]:text-stone-600 [&_figcaption]:mt-auto [&_figcaption]:flex [&_figcaption]:items-center [&_figcaption]:gap-3 [&_figcaption]:border-t [&_figcaption]:border-stone-100 [&_figcaption]:pt-3.5 [&_figcaption_strong]:block [&_figcaption_strong]:text-[13px] [&_figcaption_strong]:leading-5 [&_figcaption_strong]:font-bold [&_figcaption>span:last-child>span]:block [&_figcaption>span:last-child>span]:text-[10px] [&_figcaption>span:last-child>span]:leading-[17px] [&_figcaption>span:last-child>span]:font-medium [&_figcaption>span:last-child>span]:text-stone-500 rounded-3xl border border-white bg-white shadow-home-panel md:rounded-panel"
-                key={name}
+                className="m-0 flex h-full flex-col p-6 lg:min-h-[313px] [&_blockquote]:mb-5 [&_blockquote]:text-sm [&_blockquote]:leading-[23px] [&_blockquote]:font-medium [&_blockquote]:italic [&_blockquote]:text-stone-600 [&_figcaption]:mt-auto [&_figcaption]:flex [&_figcaption]:items-center [&_figcaption]:gap-3 [&_figcaption]:border-t [&_figcaption]:border-stone-100 [&_figcaption]:pt-3.5 [&_figcaption_strong]:block [&_figcaption_strong]:text-[13px] [&_figcaption_strong]:leading-5 [&_figcaption_strong]:font-bold [&_figcaption>span:last-child>span]:block [&_figcaption>span:last-child>span]:text-[10px] [&_figcaption>span:last-child>span]:leading-[17px] [&_figcaption>span:last-child>span]:font-medium [&_figcaption>span:last-child>span]:text-stone-500 rounded-3xl border border-white bg-white shadow-home-panel md:rounded-panel"
+                key={key}
                 variants={reveal}
                 initial="hidden"
                 whileInView="visible"
@@ -443,13 +491,13 @@ export function CustomerHome({ setPage, onSelectProvider }: CustomerHomeProps) {
               >
                 <div
                   className="mb-3.5 flex items-center gap-[3px] text-brand-yellow"
-                  aria-label="5 out of 5 stars"
+                  aria-label={`${rating} out of 5 stars`}
                 >
                   {Array.from({ length: 5 }, (_, index) => (
                     <Star
                       key={index}
                       size={17}
-                      fill="currentColor"
+                      fill={index < rating ? "currentColor" : "none"}
                       aria-hidden="true"
                     />
                   ))}

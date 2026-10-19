@@ -50,7 +50,7 @@ export function HomeHeader({
   const [menuOpen, setMenuOpen] = useState(false);
   return (
     <header className="sticky top-3 z-30 mx-auto max-w-marketplace px-4 md:top-4 md:px-8">
-      <div className="flex min-h-16 items-center gap-3 rounded-full border border-white bg-white px-4 py-[11px] shadow-home-header md:min-h-[70px] md:gap-5 md:px-5 md:py-3.5 wide:gap-8 wide:px-6">
+      <div className="flex min-h-16 items-center gap-3 overflow-hidden rounded-full border border-white bg-white px-4 py-[11px] shadow-home-header md:min-h-[70px] md:gap-5 md:px-5 md:py-3.5 wide:gap-8 wide:px-6">
         <a
           className="shrink-0 rounded-lg"
           href="#home"
@@ -108,7 +108,7 @@ export function HomeHeader({
             Sign In
           </button>
           <button
-            className="inline-flex shrink-0 items-center justify-center rounded-full border border-transparent font-bold transition-[background,box-shadow,transform] duration-[160ms] active:scale-[0.98] hidden min-h-[34px] gap-[7px] bg-brand-ink px-[13px] py-2 text-[11px] leading-4 text-brand-yellow shadow-[0_2px_5px_rgb(17_24_39/15%)] hover:bg-black xs:inline-flex md:px-5 md:text-xs"
+            className="inline-flex shrink-0 items-center justify-center rounded-full border border-transparent font-bold transition-[background,box-shadow,transform] duration-[160ms] active:scale-[0.98] hidden min-h-[34px] gap-[7px] bg-brand-ink px-[13px] py-2 text-[11px] leading-4 text-brand-yellow shadow-[0_2px_5px_rgb(17_24_39/15%)] hover:bg-black md:inline-flex md:px-5 md:text-xs"
             onClick={onBook}
           >
             <CalendarDays size={15} aria-hidden="true" />

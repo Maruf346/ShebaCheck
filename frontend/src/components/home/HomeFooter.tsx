@@ -102,7 +102,7 @@ export function HomeFooter({ onZone, onService, onDialog }: HomeFooterProps) {
         </div>
         <div className="flex flex-col items-start justify-between gap-4 border-t border-white/10 pt-6 text-[10px] leading-4 font-medium md:text-[11px] wide:flex-row wide:items-center [&>div]:flex [&>div]:flex-wrap [&>div]:items-center [&>div]:gap-2.5 md:[&>div]:gap-4">
           <p>
-            &copy; 2025 ShebaCheck Bangladesh. All rights reserved. Trusted
+            &copy; 2026 ShebaCheck Bangladesh. All rights reserved. Trusted
             technician marketplace.
           </p>
           <div>

@@ -30,7 +30,7 @@ export function TechnicianCard({
     serviceIcons[technician.category as keyof typeof serviceIcons] ?? Wrench;
   return (
     <article
-      className="home-technician flex min-h-[284px] min-w-0 flex-col p-5 transition-[transform,box-shadow] duration-[180ms] hover:-translate-y-[3px] hover:shadow-[0_12px_28px_rgb(180_83_9/13%)] motion-reduce:hover:transform-none card-grid:min-h-72 wide:min-h-[303px] rounded-3xl border border-white bg-white shadow-home-panel md:rounded-panel"
+      className="home-technician flex h-full min-w-0 flex-col p-5 transition-[transform,box-shadow] duration-[180ms] hover:-translate-y-[3px] hover:shadow-[0_12px_28px_rgb(180_83_9/13%)] motion-reduce:hover:transform-none rounded-3xl border border-white bg-white shadow-home-panel md:rounded-panel"
       aria-label={`${technician.name}, ${technician.specialty}`}
     >
       <button
