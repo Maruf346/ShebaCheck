@@ -3,7 +3,6 @@ import { Filter, RotateCcw, SearchX } from "lucide-react";
 import { ApiError, listFavoriteProviders, removeFavoriteProvider, saveFavoriteProvider, searchProviders } from "../../api/client";
 import { useAuth } from "../../auth/AuthProvider";
 import { adaptProvider } from "../../api/adapters";
-import { providers as demoProviders } from "../../data/mockData";
 import type { Provider } from "../../types";
 import { ProviderCard } from "../../components/ProviderCard";
 import { Button } from "../../components/ui/Button";
@@ -20,7 +19,6 @@ export function SearchResults({ onSelectProvider }: { onSelectProvider: (provide
   const [verification, setVerification] = useState("All providers");
   const [sortBy, setSortBy] = useState("Recommended");
   const [apiProviders, setApiProviders] = useState<Provider[]>([]);
-  const [apiMode, setApiMode] = useState(true);
   const [loading, setLoading] = useState(true);
   const [apiError, setApiError] = useState("");
   const [savedIds, setSavedIds] = useState<number[]>([]);
@@ -74,16 +72,12 @@ export function SearchResults({ onSelectProvider }: { onSelectProvider: (provide
     }).then((response) => {
       if (!active) return;
       setApiProviders(response.results.map(adaptProvider));
-      setApiMode(response.results.length > 0);
     }).catch((error: unknown) => {
       if (!active) return;
       if (error instanceof ApiError && error.status !== 0) {
         setApiError(error.message);
-        setApiProviders([]);
-      } else {
-        setApiMode(false);
-        setApiProviders([]);
       }
+      setApiProviders([]);
     }).finally(() => {
       if (active) setLoading(false);
     });
@@ -91,8 +85,7 @@ export function SearchResults({ onSelectProvider }: { onSelectProvider: (provide
   }, [category, area, minPrice, maxPrice, minRating, verification, availableOn, ordering]);
 
   const visibleProviders = useMemo(() => {
-    const sourceProviders = apiMode ? apiProviders : demoProviders;
-    const filtered = sourceProviders.filter((provider) => {
+    const filtered = apiProviders.filter((provider) => {
       const categoryMatches = category === "All services" || provider.category === category;
       const areaMatches = area === "All Dhaka" || provider.area.toLowerCase().includes(area.toLowerCase());
       const budgetMatches = budget === "Any budget"
@@ -101,18 +94,17 @@ export function SearchResults({ onSelectProvider }: { onSelectProvider: (provide
         || (budget === "৳1,500+" && provider.startingPrice > 1500);
       const ratingThreshold = rating === "4.8+" ? 4.8 : rating === "4.5+" ? 4.5 : rating === "4.0+" ? 4 : 0;
       const ratingMatches = provider.rating >= ratingThreshold;
-      const availabilityMatches = apiMode || availability === "Any time" || provider.availability?.includes(availability as "Today" | "Tomorrow" | "This weekend");
       const verificationMatches = verification === "All providers"
         || (verification === "Verified identity" && provider.verifiedIdentity)
         || (verification === "Work history checked" && provider.tags.some((tag) => tag.toLowerCase().includes("work history")));
-      return categoryMatches && areaMatches && budgetMatches && ratingMatches && availabilityMatches && verificationMatches;
+      return categoryMatches && areaMatches && budgetMatches && ratingMatches && verificationMatches;
     });
 
     if (sortBy === "Highest Rated") return filtered.sort((a, b) => b.rating - a.rating || b.reviews - a.reviews);
     if (sortBy === "Lowest Price") return filtered.sort((a, b) => a.startingPrice - b.startingPrice);
     if (sortBy === "Most Reviewed") return filtered.sort((a, b) => b.reviews - a.reviews);
     return filtered;
-  }, [apiMode, apiProviders, area, availability, budget, category, rating, sortBy, verification]);
+  }, [apiProviders, area, budget, category, rating, sortBy, verification]);
 
   const resetFilters = () => {
     setCategory("All services");
@@ -156,7 +148,7 @@ export function SearchResults({ onSelectProvider }: { onSelectProvider: (provide
 
         <div className="mt-5 flex items-center justify-between gap-3 border-b border-warm-200 pb-3 text-sm">
           <p className="font-semibold text-warm-700" role="status">{visibleProviders.length} {visibleProviders.length === 1 ? "provider" : "providers"} found</p>
-          <span className="text-xs font-medium text-warm-500">{apiMode ? "Live API" : "Local demo listings"}</span>
+          <span className="text-xs font-medium text-warm-500">Live API</span>
         </div>
 
         {apiError && <p className="mt-4 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-800" role="alert">Could not load providers: {apiError}</p>}

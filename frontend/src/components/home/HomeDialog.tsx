@@ -48,7 +48,7 @@ export function HomeDialog({
           <X size={20} />
         </button>
         <span className="flex items-center gap-2 text-[11px] leading-4 font-extrabold uppercase text-yellow-700 md:text-[11px] md:leading-[18px] pr-[30px]">
-          ShebaCheck &middot; Demo preview
+          ShebaCheck &middot; Service notice
         </span>
         <h2 id={titleId}>{content.title}</h2>
         {content.paragraphs.map((paragraph) => (

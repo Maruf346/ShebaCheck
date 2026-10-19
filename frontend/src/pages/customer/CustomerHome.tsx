@@ -179,7 +179,13 @@ export function CustomerHome({ setPage, onSelectProvider }: CustomerHomeProps) {
     );
   }
 
-  const bookFeatured = () => onSelectProvider(featuredTechnician, "booking");
+  const bookFeatured = () => {
+    if (apiTechnicians.length > 0) {
+      onSelectProvider(apiTechnicians[0], "booking");
+    } else {
+      setPage("search");
+    }
+  };
 
   return (
     <div className="shebacheck-home relative min-h-screen overflow-hidden bg-home-canvas pt-3 pb-[calc(72px+env(safe-area-inset-bottom))] font-sans text-sm leading-[21px] tracking-normal text-brand-ink md:pt-4 md:pb-0 [&_*]:tracking-normal [&_svg]:shrink-0 motion-reduce:[&_*]:!transition-none motion-reduce:[&_*]:!animate-none [&_:is(button,a,select):focus-visible]:outline [&_:is(button,a,select):focus-visible]:outline-[3px] [&_:is(button,a,select):focus-visible]:outline-offset-4 [&_:is(button,a,select):focus-visible]:outline-brand-amber [&_button]:[-webkit-tap-highlight-color:transparent] [&_section[id]]:scroll-mt-[110px]">

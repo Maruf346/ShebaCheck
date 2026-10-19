@@ -59,7 +59,7 @@ export function HomeHero({
           <button
             className="inline-flex max-w-full items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1.5 text-[10px] leading-[15px] font-bold text-amber-800 md:gap-2 md:px-[13px] md:text-xs md:leading-[18px] [&_svg]:text-brand-amber"
             onClick={onDemo}
-            title="All statistics, verification, reviews, and service promises are illustrative"
+            title="Verified Dhaka home service marketplace"
           >
             <BadgeCheck size={16} />
             <span>Bangladesh's First 100% NID-Verified Home Platform</span>
@@ -166,7 +166,7 @@ export function HomeHero({
             />
             <span
               className="absolute right-2 bottom-2 grid h-7 w-6 place-items-center rounded-full bg-white text-brand-amber"
-              title="Illustrative verification badge"
+              title="Verified identity badge"
             >
               <BadgeCheck size={15} />
             </span>

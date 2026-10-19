@@ -134,9 +134,17 @@ export function AdminDashboard() {
       </Card>
 
       <div className="mt-6 grid gap-6 lg:grid-cols-2">
-        <OpsPanel id="admin-verification" title="Verification management" items={["14 NID checks awaiting manual review", "8 portfolio submissions need evidence quality check", "5 provider reference calls scheduled"]} />
+        <OpsPanel id="admin-verification" title="Verification management" items={[
+          `${pendingVerification} provider profile${pendingVerification !== 1 ? "s" : ""} pending identity verification`,
+          "NID checks require manual review before a profile is marked verified",
+          "Portfolio submissions and references are reviewed before verification is granted"
+        ]} />
         <OpsPanel id="admin-disputes" title="Dispute management" items={disputes.length ? disputes.map((dispute) => `#${dispute.id} · ${dispute.status.replace(/_/g, " ")} · ${dispute.provider_name}`) : ["No disputes have been opened yet."]} />
-        <OpsPanel id="admin-provider-ops" title="Provider operations" items={["Provider records are demo data", "Identity status requires a separate human review", "No automatic enforcement action is enabled"]} />
+        <OpsPanel id="admin-provider-ops" title="Provider operations" items={[
+          `${providerCount} active provider profile${providerCount !== 1 ? "s" : ""} in the system`,
+          "Identity verification status is managed by the admin team",
+          "No automatic enforcement actions are performed without manual review"
+        ]} />
       </div>
     </DashboardShell>
   );

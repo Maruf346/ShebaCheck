@@ -14,8 +14,6 @@ import { SearchResults } from "./pages/customer/SearchResults";
 import { ProviderDashboard } from "./pages/provider/ProviderDashboard";
 import { AuthPage } from "./pages/auth/AuthPage";
 import type { AppPage, Provider } from "./types";
-import { providers } from "./data/mockData";
-import { featuredTechnician, homeTechnicians } from "./data/homeContent";
 
 const pagePaths: Record<AppPage, string> = {
   home: "/",
@@ -37,15 +35,6 @@ function getPageFromPath(pathname: string): AppPage | null {
   return page?.[0] ?? null;
 }
 
-function getProviderFromId(providerId: string | null): Provider {
-  const id = Number(providerId);
-  return (
-    [...providers, ...homeTechnicians, featuredTechnician].find(
-      (provider) => provider.id === id,
-    ) ?? providers[0]
-  );
-}
-
 export default function App() {
   const location = useLocation();
   const routerNavigate = useNavigate();
@@ -53,14 +42,15 @@ export default function App() {
   const page = getPageFromPath(location.pathname);
   const requestedProviderId = new URLSearchParams(location.search).get("provider");
   const [remoteProvider, setRemoteProvider] = useState<Provider | null>(null);
+  const [providerLoading, setProviderLoading] = useState(false);
   const [providerLoadFailed, setProviderLoadFailed] = useState(false);
-  const demoProvider = getProviderFromId(requestedProviderId);
-  const selectedProvider = remoteProvider?.id === Number(requestedProviderId) ? remoteProvider : demoProvider;
+  const selectedProvider = remoteProvider?.id === Number(requestedProviderId) ? remoteProvider : null;
 
   useEffect(() => {
     if ((page !== "profile" && page !== "booking") || !requestedProviderId) {
       setRemoteProvider(null);
       setProviderLoadFailed(false);
+      setProviderLoading(false);
       return;
     }
     const id = Number(requestedProviderId);
@@ -69,20 +59,27 @@ export default function App() {
       return;
     }
     let active = true;
+    setProviderLoading(true);
     getProvider(id).then((provider) => {
       if (active) {
         setRemoteProvider(adaptProvider(provider));
         setProviderLoadFailed(false);
+        setProviderLoading(false);
       }
     }).catch((error: unknown) => {
-      if (active && error instanceof ApiError && error.status !== 0 && error.status !== 404) {
-        setProviderLoadFailed(true);
+      if (active) {
+        setProviderLoading(false);
+        if (error instanceof ApiError && error.status !== 0 && error.status !== 404) {
+          setProviderLoadFailed(true);
+        } else if (error instanceof ApiError && error.status === 404) {
+          setProviderLoadFailed(true);
+        }
       }
     });
     return () => { active = false; };
   }, [page, requestedProviderId]);
 
-  const navigate = (nextPage: AppPage, providerId = selectedProvider.id) => {
+  const navigate = (nextPage: AppPage, providerId = selectedProvider?.id) => {
     const path = pagePaths[nextPage];
     const search =
       nextPage === "profile" || nextPage === "booking"
@@ -111,11 +108,13 @@ export default function App() {
         return <SearchResults onSelectProvider={selectProvider} />;
       case "profile":
         if (providerLoadFailed) return <ProviderLoadError />;
+        if (providerLoading || !selectedProvider) return <ProviderLoadingState />;
         return (
           <ProviderProfile setPage={navigate} provider={selectedProvider} />
         );
       case "booking":
         if (providerLoadFailed) return <ProviderLoadError />;
+        if (providerLoading || !selectedProvider) return <ProviderLoadingState />;
         return (
           <BookingFlow key={selectedProvider.id} provider={selectedProvider} />
         );
@@ -176,4 +175,14 @@ export default function App() {
 
 function ProviderLoadError() {
   return <main className="relative z-10 mx-auto max-w-3xl px-4 py-12"><div className="rounded-3xl border border-white bg-white p-6 shadow-home-panel sm:p-9"><h1 className="text-2xl font-extrabold text-warm-900">Provider unavailable</h1><p className="mt-3 leading-6 text-warm-600">We couldn’t load this provider profile from the API. Try returning to search and selecting another provider.</p></div></main>;
+}
+
+function ProviderLoadingState() {
+  return (
+    <main className="relative z-10 mx-auto max-w-3xl px-4 py-12">
+      <div className="rounded-3xl border border-white bg-white p-6 shadow-home-panel sm:p-9">
+        <p className="font-semibold text-warm-700" role="status">Loading provider profile…</p>
+      </div>
+    </main>
+  );
 }

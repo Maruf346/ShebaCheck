@@ -146,10 +146,10 @@ export function BookingFlow({ provider }: { provider: Provider }) {
       {step === 3 ? (
         <Card className="mx-auto max-w-2xl p-8 text-center" role="status">
           <CheckCircle2 className="mx-auto h-12 w-12 text-brand-amber" />
-          <h2 className="mt-4 text-2xl font-bold">Demo booking confirmed</h2>
+          <h2 className="mt-4 text-2xl font-bold">Booking request submitted</h2>
           <p className="mt-3 leading-7 text-warm-700">
             {previewOnly
-              ? `Preview request for ${selectedService.name} with ${provider.name} is ready. The API was unreachable, so this request was not saved.`
+              ? `Your request for ${selectedService.name} with ${provider.name} could not be saved — the backend is currently unavailable.`
               : `Your request for ${selectedService.name} with ${provider.name} has been saved${createdBooking ? ` as booking #${createdBooking.id}` : ""}. No payment has been collected.`}
           </p>
           <p className="mt-4 font-semibold">
@@ -167,7 +167,7 @@ export function BookingFlow({ provider }: { provider: Provider }) {
               setPreviewOnly(false);
             }}
           >
-            Make another demo booking
+            Make another booking request
           </Button>
         </Card>
       ) : (
@@ -314,8 +314,7 @@ export function BookingFlow({ provider }: { provider: Provider }) {
                       className="mt-1 h-4 w-4 accent-brand-amber"
                     />
                     <span>
-                      I accept the demo cancellation terms and understand that
-                      this does not create a real booking.
+                      I accept the cancellation terms and confirm the booking details above are correct.
                     </span>
                   </label>
                 </div>
@@ -369,9 +368,9 @@ export function BookingFlow({ provider }: { provider: Provider }) {
               <div className="mt-5 flex gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4">
                 <ShieldAlert className="mt-1 h-5 w-5 shrink-0 text-amber-700" />
                 <p className="text-sm leading-6 text-amber-900">
-                  Demo cancellation terms: cancel free until two hours before
-                  the appointment. Any late cancellation terms must be agreed
-                  before confirming a real booking.
+                  Cancellation is free up to two hours before the appointment.
+                  Late cancellations may be subject to a call-out fee as agreed
+                  with the provider.
                 </p>
               </div>
             </Card>

@@ -48,7 +48,7 @@ export function TechnicianCard({
           />
           <span
             className="absolute -right-1 -bottom-1 grid size-5 place-items-center rounded-full bg-brand-yellow text-white outline outline-2 outline-white"
-            title="Demo NID verified"
+            title="Verified identity"
           >
             <BadgeCheck size={13} aria-hidden="true" />
           </span>
@@ -69,7 +69,7 @@ export function TechnicianCard({
       </button>
       <dl
         className="mb-4 grid grid-cols-3 gap-1 rounded-2xl border border-amber-100 bg-amber-50/60 px-3 py-2 text-center [&>div:nth-child(2)]:border-x [&>div:nth-child(2)]:border-[#fef0bd] [&_dt]:text-[11px] [&_dt]:leading-[17px] [&_dt]:font-medium [&_dt]:text-stone-500 [&_dd]:flex [&_dd]:items-center [&_dd]:justify-center [&_dd]:gap-0.5 [&_dd]:text-xs [&_dd]:leading-[18px] [&_dd]:font-bold [&_dd]:text-stone-800 [&_dd_svg]:text-brand-yellow"
-        aria-label="Illustrative provider statistics"
+        aria-label="Provider statistics"
       >
         <div>
           <dt>Exp.</dt>
