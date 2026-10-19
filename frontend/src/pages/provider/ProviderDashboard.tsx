@@ -1,5 +1,27 @@
 import { useEffect, useState, type FormEvent } from "react";
-import { BadgeCheck, CalendarClock, CheckCircle2, Image, ListChecks, MessageSquare, Plus, RefreshCcw, Save, Send, ShieldCheck, UserCheck, XCircle } from "lucide-react";
+import {
+  BadgeCheck,
+  CalendarClock,
+  Camera,
+  CheckCircle2,
+  Cpu,
+  FileCheck,
+  Image,
+  ListChecks,
+  MessageSquare,
+  Plus,
+  RefreshCcw,
+  RotateCcw,
+  Save,
+  ScanLine,
+  Send,
+  ShieldAlert,
+  ShieldCheck,
+  Sparkles,
+  Upload,
+  UserCheck,
+  XCircle,
+} from "lucide-react";
 import {
   ApiError,
   createAvailabilityBlock,
@@ -13,12 +35,15 @@ import {
   listReviewsForProvider,
   listProviderServices,
   replyToReview,
+  resetNidVerification,
   updateBookingStatus,
   updateProviderService,
+  verifyNidDocument,
   type ApiBooking,
   type ApiPortfolioItem,
   type ApiProviderService,
   type ApiReview,
+  type NidVerificationResponse,
 } from "../../api/client";
 import { adaptProvider } from "../../api/adapters";
 import { DashboardShell } from "../../components/DashboardShell";
@@ -60,6 +85,61 @@ export function ProviderDashboard() {
   const [editingServiceId, setEditingServiceId] = useState<number | null>(null);
   const [serviceSaved, setServiceSaved] = useState(false);
   const [reviewReply, setReviewReply] = useState("");
+  const [nidScanning, setNidScanning] = useState(false);
+  const [ocrResult, setOcrResult] = useState<NidVerificationResponse | null>(null);
+  const [ocrError, setOcrError] = useState("");
+
+  async function handleScanSample(testCardType: string) {
+    setNidScanning(true);
+    setOcrError("");
+    try {
+      const res = await verifyNidDocument({ test_card: testCardType });
+      setOcrResult(res);
+      if (res.profile_verified) {
+        setProfile((prev) => (prev ? { ...prev, verified_identity: true } : prev));
+      }
+    } catch (err: unknown) {
+      setOcrError(err instanceof Error ? err.message : "Failed to run NID OCR.");
+    } finally {
+      setNidScanning(false);
+    }
+  }
+
+  async function handleFileUpload(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    setNidScanning(true);
+    setOcrError("");
+    const reader = new FileReader();
+    reader.onload = async () => {
+      try {
+        const base64Data = reader.result as string;
+        const res = await verifyNidDocument({ nid_image: base64Data });
+        setOcrResult(res);
+        if (res.profile_verified) {
+          setProfile((prev) => (prev ? { ...prev, verified_identity: true } : prev));
+        }
+      } catch (err: unknown) {
+        setOcrError(err instanceof Error ? err.message : "Failed to verify NID image.");
+      } finally {
+        setNidScanning(false);
+      }
+    };
+    reader.readAsDataURL(file);
+  }
+
+  async function handleResetVerification() {
+    setNidScanning(true);
+    try {
+      await resetNidVerification();
+      setOcrResult(null);
+      setProfile((prev) => (prev ? { ...prev, verified_identity: false } : prev));
+    } catch (err: unknown) {
+      setOcrError(err instanceof Error ? err.message : "Failed to reset verification.");
+    } finally {
+      setNidScanning(false);
+    }
+  }
 
   async function reloadData() {
     setLoading(true);
@@ -196,16 +276,151 @@ export function ProviderDashboard() {
           {serviceSaved && <p className="mt-3 text-sm font-semibold text-amber-900" role="status">Service saved.</p>}
         </Card>
         <Card id="provider-verification" className="scroll-mt-28 p-4 sm:p-6">
-          <p className="text-xs font-extrabold uppercase tracking-[0.14em] text-amber-700">Trust profile</p>
-          <h2 className="mt-1 text-lg font-bold text-warm-900 sm:text-xl">Profile verification</h2>
-          <div className="mt-4 grid gap-3">
-            {["NID checked", "Phone verified", "Work portfolio reviewed", "Reference check pending"].map((item, index) => (
-              <div key={item} className="flex items-center justify-between gap-3 rounded-xl border border-warm-200 bg-white p-3">
-                <span className="font-semibold text-warm-800">{item}</span>
-                <Badge tone={index < 3 ? "success" : "warning"}>{index < 3 ? "Complete" : "Pending"}</Badge>
+          <div className="flex flex-wrap items-start justify-between gap-3 border-b border-warm-100 pb-4">
+            <div>
+              <div className="inline-flex items-center gap-1.5 rounded-full border border-amber-300 bg-amber-50 px-2.5 py-0.5 text-[11px] font-extrabold uppercase tracking-wider text-amber-900 mb-1">
+                <Sparkles className="size-3 text-amber-600" />
+                Local AI OCR &bull; Zero 3rd-Party APIs
               </div>
-            ))}
+              <h2 className="text-lg font-bold text-warm-900 sm:text-xl">
+                National ID Verification Panel
+              </h2>
+            </div>
+
+            <Badge tone={profile?.verified_identity ? "success" : "warning"}>
+              {profile?.verified_identity ? "Verified (NID Checked)" : "Verification Required"}
+            </Badge>
           </div>
+
+          <p className="mt-3 text-xs leading-5 text-warm-600">
+            Upload a clear scan/photo of your Bangladesh Smart NID or traditional NID card. Our local machine learning OCR model verifies card formatting, extracts your NID number &amp; DOB, and matches the name against your registered account for instant badge activation.
+          </p>
+
+          {/* Upload and Sample Buttons */}
+          <div className="mt-4 rounded-2xl border-2 border-dashed border-warm-200 bg-warm-50/60 p-4 text-center">
+            <div className="mx-auto flex size-10 items-center justify-center rounded-xl bg-amber-100 text-amber-800 mb-2">
+              <ScanLine className="size-5" />
+            </div>
+            <p className="text-xs font-bold text-warm-900">Upload Your Bangladesh National ID</p>
+            <p className="text-[11px] text-warm-500 mt-0.5">Supports PNG, JPG, or WebP</p>
+
+            <label className="mt-3 inline-flex items-center gap-2 cursor-pointer rounded-xl bg-brand-ink px-4 py-2 text-xs font-bold text-amber-300 shadow-sm hover:bg-black transition-colors">
+              <Upload className="size-3.5" />
+              <span>Choose NID Image</span>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleFileUpload}
+                disabled={nidScanning}
+                className="hidden"
+              />
+            </label>
+
+            {/* Quick 1-click test pills */}
+            <div className="mt-4 pt-3 border-t border-warm-200/60 flex flex-wrap items-center justify-center gap-2">
+              <span className="text-[11px] font-semibold text-warm-500">1-Click Test Samples:</span>
+              <button
+                type="button"
+                onClick={() => handleScanSample("sample_smart_nid")}
+                disabled={nidScanning}
+                className="rounded-full border border-warm-200 bg-white px-2.5 py-1 text-[11px] font-bold text-warm-700 hover:border-amber-300 hover:bg-amber-50 hover:text-amber-900 transition-colors disabled:opacity-50"
+              >
+                10-Digit Smart NID
+              </button>
+              <button
+                type="button"
+                onClick={() => handleScanSample("sample_legacy_nid")}
+                disabled={nidScanning}
+                className="rounded-full border border-warm-200 bg-white px-2.5 py-1 text-[11px] font-bold text-warm-700 hover:border-amber-300 hover:bg-amber-50 hover:text-amber-900 transition-colors disabled:opacity-50"
+              >
+                17-Digit Laminated NID
+              </button>
+              <button
+                type="button"
+                onClick={() => handleScanSample("sample_mismatch")}
+                disabled={nidScanning}
+                className="rounded-full border border-warm-200 bg-white px-2.5 py-1 text-[11px] font-bold text-warm-700 hover:border-amber-300 hover:bg-amber-50 hover:text-amber-900 transition-colors disabled:opacity-50"
+              >
+                Test Mismatch (Reject)
+              </button>
+            </div>
+          </div>
+
+          {/* Scanning Progress */}
+          {nidScanning && (
+            <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50/70 p-3.5 text-center">
+              <div className="flex items-center justify-center gap-2 text-xs font-bold text-amber-900">
+                <Cpu className="size-4 animate-spin text-amber-700" />
+                <span>Running Local ML OCR &amp; Binarization Engine…</span>
+              </div>
+              <p className="mt-1 text-[10px] text-amber-700">
+                Extracting contours, matching token n-grams, and checking Bangladesh NID checksum rules.
+              </p>
+            </div>
+          )}
+
+          {ocrError && (
+            <div className="mt-4 rounded-xl border border-red-200 bg-red-50 p-3 text-xs font-semibold text-red-700">
+              {ocrError}
+            </div>
+          )}
+
+          {/* OCR Result Breakdown */}
+          {ocrResult && (
+            <div className={`mt-4 rounded-2xl border p-4 space-y-3 ${ocrResult.is_verified ? "border-emerald-200 bg-emerald-50/40" : "border-red-200 bg-red-50/40"}`}>
+              <div className="flex items-center justify-between">
+                <span className={`inline-flex items-center gap-1.5 text-xs font-extrabold ${ocrResult.is_verified ? "text-emerald-800" : "text-red-800"}`}>
+                  {ocrResult.is_verified ? <CheckCircle2 className="size-4 text-emerald-600" /> : <ShieldAlert className="size-4 text-red-600" />}
+                  {ocrResult.is_verified ? "Identity Verified Successfully" : "Verification Rejected"}
+                </span>
+                <span className="text-[11px] font-bold text-warm-500">
+                  OCR Confidence: {Math.round((ocrResult.ocr_confidence ?? 0.9) * 100)}%
+                </span>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2 text-xs">
+                <div className="rounded-xl border border-warm-100 bg-white p-2.5">
+                  <span className="block text-[10px] font-bold uppercase text-warm-400">Card Format</span>
+                  <strong className="text-warm-800">{ocrResult.card_type}</strong>
+                </div>
+                <div className="rounded-xl border border-warm-100 bg-white p-2.5">
+                  <span className="block text-[10px] font-bold uppercase text-warm-400">NID Number</span>
+                  <strong className="text-warm-800 tracking-wider font-mono">{ocrResult.masked_nid}</strong>
+                </div>
+                <div className="rounded-xl border border-warm-100 bg-white p-2.5">
+                  <span className="block text-[10px] font-bold uppercase text-warm-400">Holder Name</span>
+                  <strong className="text-warm-800">{ocrResult.holder_name}</strong>
+                </div>
+                <div className="rounded-xl border border-warm-100 bg-white p-2.5">
+                  <span className="block text-[10px] font-bold uppercase text-warm-400">Name Match Score</span>
+                  <strong className={ocrResult.name_match_score && ocrResult.name_match_score >= 65 ? "text-emerald-700 font-extrabold" : "text-red-700 font-extrabold"}>
+                    {ocrResult.name_match_score}% Match
+                  </strong>
+                </div>
+              </div>
+
+              <p className="text-[11px] leading-relaxed text-warm-600">
+                {ocrResult.verification_reason}
+              </p>
+
+              {ocrResult.is_verified && (
+                <div className="flex items-center justify-between pt-2 border-t border-emerald-100">
+                  <span className="text-[11px] font-bold text-emerald-800 flex items-center gap-1">
+                    <BadgeCheck className="size-3.5 text-emerald-600" />
+                    Badge active across marketplace
+                  </span>
+                  <button
+                    type="button"
+                    onClick={handleResetVerification}
+                    className="inline-flex items-center gap-1 text-[11px] font-semibold text-warm-500 hover:text-warm-800 transition-colors"
+                  >
+                    <RotateCcw className="size-3" />
+                    Reset
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
         </Card>
       </div>
 

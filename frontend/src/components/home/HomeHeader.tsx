@@ -2,6 +2,7 @@ import {
   Bell,
   BriefcaseBusiness,
   CalendarDays,
+  LogOut,
   MapPin,
   Menu,
   Search,
@@ -13,6 +14,7 @@ import {
 import { useState } from "react";
 import { homeLocations } from "../../data/homeContent";
 import type { AppPage } from "../../types";
+import { useAuth } from "../../auth/AuthProvider";
 import { HomeBrand } from "./HomeBrand";
 import { HomeDropdown } from "./HomeDropdown";
 
@@ -49,6 +51,13 @@ export function HomeHeader({
   setPage,
 }: HomeHeaderProps) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const { user, logout } = useAuth();
+
+  function getDashboardPage(role: string): AppPage {
+    if (role === "admin") return "admin-dashboard";
+    if (role === "provider") return "provider-dashboard";
+    return "customer-dashboard";
+  }
   return (
     <header className="sticky top-3 z-30 mx-auto max-w-marketplace px-4 md:top-4 md:px-8">
       <div className="flex min-h-16 items-center gap-3 overflow-hidden rounded-full border border-white bg-white px-4 py-[11px] shadow-home-header md:min-h-[70px] md:gap-5 md:px-5 md:py-3.5 wide:gap-8 wide:px-6">
@@ -109,13 +118,35 @@ export function HomeHeader({
             <Bell size={17} />
             <span className="absolute top-[7px] right-2 box-content size-[7px] rounded-full border-2 border-white bg-brand-amber" />
           </button>
-          <button
-            className="inline-flex shrink-0 items-center justify-center rounded-full border border-transparent font-bold transition-[background,box-shadow,transform] duration-[160ms] active:scale-[0.98] hidden min-h-[34px] gap-[7px] !border-stone-200 px-4 py-2 text-xs leading-4 text-stone-800 hover:bg-stone-100 md:inline-flex"
-            onClick={() => setPage("login")}
-          >
-            <UserRound size={15} aria-hidden="true" />
-            Sign In
-          </button>
+          {user ? (
+            <div className="hidden items-center gap-2 md:inline-flex">
+              <button
+                type="button"
+                className="inline-flex shrink-0 items-center justify-center rounded-full border border-stone-200 bg-stone-50 px-3.5 py-2 text-xs font-bold text-stone-800 hover:bg-stone-100 transition-colors gap-1.5"
+                onClick={() => setPage(getDashboardPage(user.role))}
+              >
+                <UserRound size={14} className="text-brand-amber" aria-hidden="true" />
+                {user.first_name || "My Dashboard"}
+              </button>
+              <button
+                type="button"
+                className="inline-flex shrink-0 items-center justify-center rounded-full border border-stone-200 bg-white px-3 py-2 text-xs font-bold text-stone-600 hover:border-red-200 hover:bg-red-50 hover:text-red-700 transition-colors gap-1.5 shadow-xs"
+                onClick={logout}
+                title="Sign out of account"
+              >
+                <LogOut size={14} aria-hidden="true" />
+                Sign Out
+              </button>
+            </div>
+          ) : (
+            <button
+              className="inline-flex shrink-0 items-center justify-center rounded-full border border-transparent font-bold transition-[background,box-shadow,transform] duration-[160ms] active:scale-[0.98] hidden min-h-[34px] gap-[7px] !border-stone-200 px-4 py-2 text-xs leading-4 text-stone-800 hover:bg-stone-100 md:inline-flex"
+              onClick={() => setPage("login")}
+            >
+              <UserRound size={15} aria-hidden="true" />
+              Sign In
+            </button>
+          )}
           <button
             className="inline-flex shrink-0 items-center justify-center rounded-full border border-transparent font-bold transition-[background,box-shadow,transform] duration-[160ms] active:scale-[0.98] hidden min-h-[34px] gap-[7px] bg-brand-ink px-[13px] py-2 text-[11px] leading-4 text-brand-yellow shadow-[0_2px_5px_rgb(17_24_39/15%)] hover:bg-black md:inline-flex md:px-5 md:text-xs"
             onClick={onBook}
@@ -165,16 +196,41 @@ export function HomeHeader({
             <Sparkles className="h-4 w-4 text-amber-600" aria-hidden="true" />
             AI Price Estimator
           </button>
-          <button
-            className="inline-flex items-center gap-3"
-            onClick={() => {
-              setMenuOpen(false);
-              setPage("login");
-            }}
-          >
-            <UserRound className="h-4 w-4 text-brand-amber" aria-hidden="true" />
-            Sign In
-          </button>
+          {user ? (
+            <>
+              <button
+                className="inline-flex items-center gap-3 font-bold text-stone-800"
+                onClick={() => {
+                  setMenuOpen(false);
+                  setPage(getDashboardPage(user.role));
+                }}
+              >
+                <UserRound className="h-4 w-4 text-brand-amber" aria-hidden="true" />
+                My Dashboard ({user.first_name || user.email})
+              </button>
+              <button
+                className="inline-flex items-center gap-3 font-bold text-red-600 hover:text-red-700"
+                onClick={() => {
+                  setMenuOpen(false);
+                  logout();
+                }}
+              >
+                <LogOut className="h-4 w-4 text-red-600" aria-hidden="true" />
+                Sign Out
+              </button>
+            </>
+          ) : (
+            <button
+              className="inline-flex items-center gap-3"
+              onClick={() => {
+                setMenuOpen(false);
+                setPage("login");
+              }}
+            >
+              <UserRound className="h-4 w-4 text-brand-amber" aria-hidden="true" />
+              Sign In
+            </button>
+          )}
         </nav>
       )}
     </header>

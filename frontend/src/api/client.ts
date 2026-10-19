@@ -441,3 +441,33 @@ export function estimateJobCost(payload: { problem_description: string; area?: s
   });
 }
 
+export interface NidVerificationResponse {
+  is_verified: boolean;
+  nid_number?: string;
+  masked_nid?: string;
+  holder_name?: string;
+  dob?: string;
+  card_type?: string;
+  format_valid?: boolean;
+  format_label?: string;
+  name_match_score?: number;
+  ocr_confidence?: number;
+  verification_reason?: string;
+  profile_verified?: boolean;
+  error?: string;
+}
+
+export function verifyNidDocument(payload: { test_card?: string; nid_image?: string }) {
+  return apiRequest<NidVerificationResponse>("/providers/verify-nid/", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export function resetNidVerification() {
+  return apiRequest<{ status: string; identity_verified: boolean }>("/providers/reset-nid/", {
+    method: "POST",
+  });
+}
+
+

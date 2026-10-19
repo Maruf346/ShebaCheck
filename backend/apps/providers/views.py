@@ -89,6 +89,67 @@ class ProviderViewSet(viewsets.ReadOnlyModelViewSet):
         profile = self.get_queryset().filter(pk=profile.pk).first() or profile
         return Response(PublicProviderSerializer(profile, context=self.get_serializer_context()).data)
 
+    @extend_schema(
+        tags=["Providers"],
+        summary="Automated AI OCR NID Verification for Provider",
+        description="Scans uploaded NID image or test sample card using local ML OCR, checks Bangladesh NID formatting, verifies name match against registered provider account, and automatically sets identity_verified=True upon match.",
+    )
+    @action(detail=False, methods=("post",), url_path="verify-nid")
+    def verify_nid(self, request):
+        from apps.ml_estimator.nid_ocr import get_nid_ocr_engine
+        profile, _ = ProviderProfile.objects.get_or_create(
+            user=request.user,
+            defaults={"display_name": " ".join(filter(None, (request.user.first_name, request.user.last_name))) or request.user.email.split("@", 1)[0]},
+        )
+        test_card = request.data.get("test_card")
+        nid_image_b64 = request.data.get("nid_image")
+        image_file = request.FILES.get("file")
+
+        image_bytes = None
+        if image_file:
+            image_bytes = image_file.read()
+        elif nid_image_b64:
+            if "," in nid_image_b64:
+                nid_image_b64 = nid_image_b64.split(",", 1)[1]
+            try:
+                import base64
+                image_bytes = base64.b64decode(nid_image_b64)
+            except Exception:
+                pass
+
+        ocr_engine = get_nid_ocr_engine()
+        full_name = " ".join(filter(None, (request.user.first_name, request.user.last_name))) or profile.display_name
+        result = ocr_engine.process_nid_document(
+            image_bytes=image_bytes,
+            test_card_type=test_card,
+            provider_name=full_name,
+        )
+
+        if result.get("is_verified"):
+            profile.identity_verified = True
+            current_tags = list(profile.tags or [])
+            if "NID checked" not in current_tags:
+                current_tags.insert(0, "NID checked")
+            masked = result.get("masked_nid")
+            if masked:
+                tag_label = f"NID: {masked}"
+                if tag_label not in current_tags:
+                    current_tags.append(tag_label)
+            profile.tags = current_tags
+            profile.save(update_fields=["identity_verified", "tags"])
+
+        result["profile_verified"] = profile.identity_verified
+        return Response(result, status=status.HTTP_200_OK)
+
+    @action(detail=False, methods=("post",), url_path="reset-nid")
+    def reset_nid(self, request):
+        profile = ProviderProfile.objects.filter(user=request.user).first()
+        if profile:
+            profile.identity_verified = False
+            profile.tags = [t for t in (profile.tags or []) if not t.startswith("NID")]
+            profile.save(update_fields=["identity_verified", "tags"])
+        return Response({"status": "reset", "identity_verified": False})
+
 
 class ProviderOwnedModelViewSet(viewsets.ModelViewSet):
     model = None

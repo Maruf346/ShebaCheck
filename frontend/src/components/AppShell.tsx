@@ -1,4 +1,4 @@
-import { BriefcaseBusiness, CalendarDays, Gauge, Menu, Search, ShieldCheck, Sparkles, UserRound, X } from "lucide-react";
+import { BriefcaseBusiness, CalendarDays, Gauge, LogOut, Menu, Search, ShieldCheck, Sparkles, UserRound, X } from "lucide-react";
 import { useState } from "react";
 import { useAuth } from "../auth/AuthProvider";
 import type { AppPage } from "../types";
@@ -34,6 +34,17 @@ export function AppShell({ page, setPage, children }: { page: AppPage; setPage: 
           </nav>
           <div className="ml-auto hidden items-center gap-2 lg:flex">
             <Button variant="secondary" onClick={() => setPage(user ? accountPage(user.role) : "login")}><ShieldCheck className="h-4 w-4" aria-hidden="true" />{user ? user.first_name || "Account" : "Sign In"}</Button>
+            {user && (
+              <button
+                type="button"
+                onClick={logout}
+                className="inline-flex items-center gap-1.5 rounded-full border border-stone-200 bg-white px-3 py-2 text-xs font-bold text-stone-600 hover:border-red-200 hover:bg-red-50 hover:text-red-700 transition-colors shadow-xs"
+                title="Sign out"
+              >
+                <LogOut className="h-3.5 w-3.5" aria-hidden="true" />
+                Sign Out
+              </button>
+            )}
             {user?.role === "admin" && <button className="focus-ring grid size-10 shrink-0 place-items-center rounded-full border border-warm-200 bg-white text-amber-800 hover:bg-amber-50" aria-label="Admin dashboard" onClick={() => setPage("admin-dashboard")}><Gauge className="h-4 w-4" aria-hidden="true" /></button>}
             <Button onClick={() => setPage("booking")}><CalendarDays className="h-4 w-4" aria-hidden="true" />Book a Pro</Button>
           </div>
