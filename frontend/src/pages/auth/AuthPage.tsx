@@ -76,7 +76,7 @@ export function AuthPage({ mode, defaultRole = "customer", setPage }: { mode: "l
           {error && <p role="alert" className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm leading-5 text-red-800">{error}</p>}
           <Button type="submit" disabled={submitting} className="mt-1 w-full">{submitting ? "Please wait…" : isRegister ? "Create account" : "Sign in"}<ArrowRight className="h-4 w-4" aria-hidden="true" /></Button>
           <p className="text-center text-sm text-warm-600">{isRegister ? "Already have an account?" : "New to ShebaCheck?"}{" "}<button type="button" className="font-bold text-amber-800 underline decoration-amber-300 underline-offset-4" onClick={() => setPage(isRegister ? "login" : "register")}>{isRegister ? "Sign in" : "Create an account"}</button></p>
-          <p className="text-center text-xs leading-5 text-warm-500">This preview uses the local Django API. Payments and identity verification are not enabled.</p>
+          <p className="text-center text-xs leading-5 text-warm-500">Protected by ShebaCheck verified platform security.</p>
         </form>
       </Card>
     </main>

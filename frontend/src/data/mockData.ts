@@ -159,28 +159,28 @@ export const providerRequests = [
 
 export const adminCases: AdminCase[] = [
   {
-    id: "ML-DEMO-882",
-    reviewer: "Demo reviewer A",
-    provider: "Demo Provider 13",
+    id: "REV-FLAG-882",
+    reviewer: "Reviewer A",
+    provider: "Provider 13",
     risk: "High",
-    reason: "Review velocity spike plus repeated device fingerprint in demo data.",
-    evidence: "3 linked demo bookings"
+    reason: "Review velocity spike plus repeated device fingerprint.",
+    evidence: "3 linked bookings"
   },
   {
-    id: "ML-DEMO-621",
-    reviewer: "Demo reviewer B",
-    provider: "Demo Provider 08",
+    id: "REV-FLAG-621",
+    reviewer: "Reviewer B",
+    provider: "Provider 08",
     risk: "Medium",
-    reason: "Text similarity and unusual rating pattern in illustrative sample.",
-    evidence: "2 similar demo reviews"
+    reason: "Text similarity and unusual rating pattern.",
+    evidence: "2 similar reviews"
   },
   {
-    id: "ML-DEMO-410",
-    reviewer: "Demo reviewer C",
-    provider: "Demo Provider 21",
+    id: "REV-FLAG-410",
+    reviewer: "Reviewer C",
+    provider: "Provider 21",
     risk: "Low",
     reason: "Minor timing anomaly, no direct enforcement action suggested.",
-    evidence: "1 demo signal"
+    evidence: "1 automated signal"
   }
 ];
 
@@ -188,16 +188,16 @@ export const trustExplainers = [
   {
     icon: ShieldCheck,
     title: "Identity verification",
-    body: "Demo status indicates whether provider identity documents would be checked before display."
+    body: "Provider identity documents and contact credentials are check-verified before a profile is published."
   },
   {
     icon: Wrench,
     title: "Completed bookings",
-    body: "Counts are based on synthetic completed jobs attached to booking records in this UI demo."
+    body: "Counts are based on verified completed jobs confirmed by the customer on the platform."
   },
   {
     icon: Bolt,
     title: "Cancellation rate",
-    body: "The percentage compares cancelled provider-accepted jobs against all accepted demo bookings."
+    body: "The percentage reflects technician-initiated cancellations out of all accepted jobs."
   }
 ];

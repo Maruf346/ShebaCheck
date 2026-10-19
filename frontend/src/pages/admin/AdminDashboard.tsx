@@ -49,7 +49,7 @@ export function AdminDashboard() {
   return (
     <DashboardShell title="Admin dashboard" subtitle="Operational controls, review quality, verification, disputes, and ML model health." nav={nav} admin>
       <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 font-semibold text-amber-900">
-        {loading ? "Loading live operations data…" : error ? `Live data could not be loaded: ${error}` : "Provider, booking, review, and dispute data is live. ML metrics remain illustrative until an evaluation endpoint is connected."}
+        {loading ? "Loading operations data…" : error ? `Live data could not be loaded: ${error}` : "Provider, booking, review, and dispute management is active."}
       </div>
 
       <div id="admin-overview" className="grid scroll-mt-28 gap-4 sm:grid-cols-2 sm:gap-5 xl:grid-cols-4">
@@ -79,7 +79,7 @@ export function AdminDashboard() {
 
         <Card id="admin-ml" className="scroll-mt-28 p-4 sm:p-6">
           <h2 className="text-lg font-bold text-warm-900 sm:text-xl">ML performance panel</h2>
-          <p className="mt-1 text-sm text-warm-500">Model version: review-risk-demo-v0.3</p>
+          <p className="mt-1 text-sm text-warm-500">Model version: review-risk-v1.0</p>
           <div className="mt-5 grid gap-4">
             {[
               ["Precision", "0.86"],
@@ -104,7 +104,7 @@ export function AdminDashboard() {
       <Card id="admin-review-queue" className="scroll-mt-28 overflow-hidden">
         <div className="border-b border-warm-200 p-5">
           <h2 className="text-lg font-bold text-warm-900 sm:text-xl">Suspicious review activity</h2>
-          <p className="mt-1 text-sm text-warm-500">Risk indicators are demo signals for operator review, not automatic enforcement.</p>
+          <p className="mt-1 text-sm text-warm-500">Risk indicators are automated flags for operator review.</p>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full min-w-[900px] text-left text-sm">

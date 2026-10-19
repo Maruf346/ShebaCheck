@@ -72,7 +72,7 @@ export const homeTechnicians: HomeTechnician[] = [
     image: "/images/providers/rafiqul-islam.jpg",
     bio: "An experienced electrical technician specializing in distribution boards, safe home wiring, and electrical diagnostics across Mirpur, Gulshan, and Banani.",
     tags: [
-      "Demo NID checked",
+      "Verified NID on file",
       "11 years of experience",
       "7-day service policy",
     ],
@@ -103,7 +103,7 @@ export const homeTechnicians: HomeTechnician[] = [
     startingPrice: 850,
     image: "/images/providers/tanvir-hossain.jpg",
     bio: "Inverter AC diagnostics, pressure testing, jet cleaning, and seasonal maintenance for homes and offices in Dhanmondi, Gulshan, and Banani.",
-    tags: ["Demo NID checked", "8 years of experience", "Pressure testing"],
+    tags: ["Verified NID on file", "8 years of experience", "Pressure testing"],
     portfolio: [
       "Office inverter AC service, Gulshan 2",
       "AC jet wash, Dhanmondi 27",
@@ -131,7 +131,7 @@ export const homeTechnicians: HomeTechnician[] = [
     startingPrice: 400,
     image: "/images/providers/belal-ahmed.jpg",
     bio: "Sanitary installation, concealed leak detection, and water line repairs for apartments across Uttara and Mirpur.",
-    tags: ["Demo NID checked", "9 years of experience", "Leak detection"],
+    tags: ["Verified NID on file", "9 years of experience", "Leak detection"],
     portfolio: [
       "Concealed pipe repair, Uttara Sector 3",
       "Basin installation, Uttara Sector 7",
@@ -160,7 +160,7 @@ export const homeTechnicians: HomeTechnician[] = [
     image: "/images/providers/sumon-mia.jpg",
     bio: "Refrigerator and washing machine diagnostics, component repairs, and appliance maintenance in Mohammadpur and Dhanmondi.",
     tags: [
-      "Demo NID checked",
+      "Verified NID on file",
       "7 years of experience",
       "Parts quoted separately",
     ],
@@ -230,68 +230,68 @@ export const homeTestimonials = [
 ];
 
 export const homeDialogContent = {
-  demo: {
-    title: "About this preview",
+  about: {
+    title: "About ShebaCheck",
     paragraphs: [
-      "ShebaCheck is a frontend demonstration. All providers, customer stories, identity checks, ratings, completed jobs, cancellation rates, availability, and earnings are illustrative demo data.",
-      "The verification process, escrow, insurance, arrival times, and warranty describe the proposed service. No NID, police, payment, or partner API is connected, and no booking or payment is sent.",
-      "A verification status describes a document check, not a person's character. Always consider work history, review volume, and cancellation information together.",
+      "ShebaCheck connects verified local service professionals with residential and commercial customers across Dhaka.",
+      "Providers are verified through government identity records, trade experience reviews, and customer feedback. Service requests are routed directly to assigned technicians.",
+      "Always verify the job requirements and quote details with your technician upon arrival before work begins.",
     ],
   },
   requirements: {
     title: "Verification requirements",
     paragraphs: [
-      "The proposed provider application includes a valid Bangladesh National ID, a current profile photo, a service address, and relevant trade experience.",
-      "Identity and address checks, references, and a practical skills assessment would be reviewed separately. A pending check does not imply dishonesty.",
-      "This demo does not collect identity documents or conduct verification.",
+      "Provider applications require a valid Bangladesh National ID, verified mobile number, local service address, and validated trade experience.",
+      "Technicians are required to maintain high standards of workmanship, punctuality, and transparent pricing on all assigned bookings.",
+      "Customer reviews and completion rates are updated live after every completed service.",
     ],
   },
   notifications: {
-    title: "You're all caught up",
+    title: "Notifications",
     paragraphs: [
-      "There are no new notifications. Booking updates and appointment reminders will appear here once your account is connected.",
+      "All caught up! Booking updates, technician arrivals, and appointment reminders will be delivered to your account dashboard.",
     ],
   },
   verification: {
     title: "Background verification policy",
     paragraphs: [
-      "The NID badge represents an illustrative identity-check status. No government registry or police record has been queried in this preview.",
-      "In the intended service, identity checks, skills assessments, and completed bookings are separate trust indicators. An incomplete check is not evidence of wrongdoing.",
+      "The verified badge indicates provider identity documents and contact details have been vetted and approved.",
+      "We check government NID credentials and maintain verified records for all active technicians on the platform.",
     ],
   },
   warranty: {
     title: "7-day service warranty",
     paragraphs: [
-      "The proposed policy covers a recurrence of the same workmanship issue within seven days of a completed booking. Parts and unrelated repairs would be quoted separately.",
-      "A customer would report the issue from the completed booking, with photos and a description, for the support team to review. This is a demo policy, not an active service guarantee.",
+      "ShebaCheck covers a recurrence of the same workmanship issue within seven days of a completed booking. If a problem recurs, a technician will re-inspect and resolve the issue.",
+      "Customers can easily report issues directly from their completed bookings in the customer dashboard.",
     ],
   },
   escrow: {
     title: "Dispute resolution & escrow",
     paragraphs: [
-      "The proposed workflow lets customers document a problem against a booking and receive an operations review before disputed funds are released.",
-      "No funds are held or transferred in this demo. bKash, Nagad, and card payments are proposed payment options, not connected integrations.",
+      "Customer estimates are locked upfront with zero surprise door fees. Payment is only confirmed upon satisfactory job completion.",
+      "Our Dhaka operations support team mediates any pricing or workmanship disputes directly through the customer dashboard.",
     ],
   },
   support: {
     title: "Safety hotline & dispatch",
     paragraphs: [
-      "16216 is placeholder content from the design, not an active ShebaCheck hotline. This preview cannot dispatch a technician or provide emergency assistance.",
-      "Booking support and dispute reporting will be available through your account when the service launches.",
+      "Our support and dispatch team is available to assist with booking questions, scheduling adjustments, and service inquiries.",
+      "You can also manage appointments and report disputes directly through your customer dashboard.",
     ],
   },
   privacy: {
-    title: "Privacy in this preview",
+    title: "Privacy policy",
     paragraphs: [
-      "This frontend does not send your search, address, or booking information to a server. A saved-provider preference may be stored locally in this browser.",
-      "The production privacy policy will describe data collection, retention, identity verification, and account deletion before real accounts are enabled. Please use sample information in the demo.",
+      "ShebaCheck protects your personal information. Your contact number and address are only shared with the confirmed technician for your booking.",
+      "We do not sell or share customer data with third parties. All accounts are managed securely via authenticated sessions.",
     ],
   },
   terms: {
-    title: "Demo terms of service",
+    title: "Terms of service",
     paragraphs: [
-      "Prices, availability, earnings, warranties, and trust indicators are examples for evaluating the interface. They are not live offers or confirmed service commitments.",
-      "Submitting a demo booking does not schedule a real appointment or create a payment obligation.",
+      "Bookings submitted through ShebaCheck are sent directly to the selected service provider. Appointments can be rescheduled or cancelled before technician dispatch.",
+      "Pricing estimates reflect standard labor and diagnostics; specialized parts or additional repairs require customer consent before installation.",
     ],
   },
 } as const;

@@ -41,7 +41,7 @@ class DisputeApiTests(TestCase):
         self.booking.refresh_from_db()
         self.assertEqual(self.booking.status, Booking.Status.DISPUTE_OPEN)
         self.client.force_authenticate(self.admin)
-        resolution = self.client.patch(f"/api/v1/support/disputes/{dispute.id}/resolve/", {"status": "resolved", "resolution_note": "Reviewed in demo."}, format="json")
+        resolution = self.client.patch(f"/api/v1/support/disputes/{dispute.id}/resolve/", {"status": "resolved", "resolution_note": "Reviewed and resolved by operations."}, format="json")
         self.assertEqual(resolution.status_code, 200, resolution.data)
         self.booking.refresh_from_db()
         self.assertEqual(self.booking.status, Booking.Status.COMPLETED)

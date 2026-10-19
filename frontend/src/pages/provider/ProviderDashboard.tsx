@@ -160,7 +160,7 @@ export function ProviderDashboard() {
         <div className="flex flex-col justify-between gap-3 border-b border-warm-200 px-4 py-4 sm:px-6 sm:py-5 md:flex-row md:items-center">
           <div>
             <h2 className="text-lg font-bold tracking-tight text-warm-900 sm:text-xl">Booking requests and appointments</h2>
-            <p className="mt-1 text-sm text-warm-600">Review each request and update its demo status.</p>
+            <p className="mt-1 text-sm text-warm-600">Review each request and manage its booking status.</p>
           </div>
           <Button variant="secondary" onClick={() => setAvailabilityFormOpen((open) => !open)}><CalendarClock className="h-4 w-4" aria-hidden="true" />Set unavailable dates</Button>
         </div>

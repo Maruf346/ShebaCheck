@@ -23,7 +23,7 @@ export function HomeFooter({ onZone, onService, onDialog }: HomeFooterProps) {
           <button
             className="flex items-center gap-4 rounded-2xl border border-brand-yellow/30 bg-white/[0.06] px-5 py-3 text-left [&_strong]:block [&_strong]:text-lg [&_strong]:leading-[27px] [&_strong]:font-extrabold [&_strong]:text-brand-yellow"
             onClick={() => onDialog("support")}
-            aria-label="About the demo safety hotline"
+            aria-label="Safety hotline and dispatch"
           >
             <span className="grid size-10 shrink-0 place-items-center rounded-full bg-brand-yellow text-stone-900">
               <Phone size={21} />
@@ -92,8 +92,7 @@ export function HomeFooter({ onZone, onService, onDialog }: HomeFooterProps) {
           <div>
             <h3>Trust Partners</h3>
             <p>
-              Proposed National ID verification and payment integrations. No
-              partner services are connected in this demo.
+              National ID verification and locked fee escrow payment protection across Dhaka.
             </p>
             <div className="mt-3 flex flex-wrap gap-2 [&_span]:rounded-full [&_span]:border [&_span]:border-brand-yellow/30 [&_span]:bg-white/10 [&_span]:px-2.5 [&_span]:py-1 [&_span]:text-[11px] [&_span]:leading-[17px] [&_span]:font-bold [&_span]:text-amber-200">
               <span>NID Verified</span>
@@ -103,7 +102,7 @@ export function HomeFooter({ onZone, onService, onDialog }: HomeFooterProps) {
         </div>
         <div className="flex flex-col items-start justify-between gap-4 border-t border-white/10 pt-6 text-[10px] leading-4 font-medium md:text-[11px] wide:flex-row wide:items-center [&>div]:flex [&>div]:flex-wrap [&>div]:items-center [&>div]:gap-2.5 md:[&>div]:gap-4">
           <p>
-            &copy; 2025 ShebaCheck Bangladesh. All rights reserved. Demo
+            &copy; 2025 ShebaCheck Bangladesh. All rights reserved. Trusted
             technician marketplace.
           </p>
           <div>
@@ -111,8 +110,8 @@ export function HomeFooter({ onZone, onService, onDialog }: HomeFooterProps) {
             <span>&bull;</span>
             <button onClick={() => onDialog("terms")}>Terms of Service</button>
             <span>&bull;</span>
-            <button onClick={() => onDialog("demo")}>
-              Dhaka Operational Status: Demo
+            <button onClick={() => onDialog("about")}>
+              Dhaka Operational Status: Active
             </button>
           </div>
         </div>

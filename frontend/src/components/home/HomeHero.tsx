@@ -28,7 +28,7 @@ interface HomeHeroProps {
   onSearch: (event: FormEvent<HTMLFormElement>) => void;
   onBook: () => void;
   onSave: () => void;
-  onDemo: () => void;
+  onAbout: () => void;
 }
 
 export function HomeHero({
@@ -42,7 +42,7 @@ export function HomeHero({
   onSearch,
   onBook,
   onSave,
-  onDemo,
+  onAbout,
 }: HomeHeroProps) {
   return (
     <section
@@ -58,7 +58,7 @@ export function HomeHero({
         <div className="flex flex-wrap items-center gap-2">
           <button
             className="inline-flex max-w-full items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1.5 text-[10px] leading-[15px] font-bold text-amber-800 md:gap-2 md:px-[13px] md:text-xs md:leading-[18px] [&_svg]:text-brand-amber"
-            onClick={onDemo}
+            onClick={onAbout}
             title="Verified Dhaka home service marketplace"
           >
             <BadgeCheck size={16} />

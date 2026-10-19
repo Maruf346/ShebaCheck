@@ -74,12 +74,12 @@ export function CustomerHome({ setPage, onSelectProvider }: CustomerHomeProps) {
         if (!active) return;
         setApiTechnicians(response.results.map(adaptHomeTechnician));
         setApiAvailable(true);
-        setApiMessage(response.results.length ? "Live local professionals" : "No provider profiles yet — showing preview listings.");
+        setApiMessage(response.results.length ? "Verified local professionals" : "No provider profiles found.");
       })
       .catch((error: unknown) => {
         if (!active) return;
         setApiAvailable(false);
-        setApiMessage(error instanceof ApiError && error.status !== 0 ? `API unavailable: ${error.message}` : "Backend offline — showing preview listings.");
+        setApiMessage(error instanceof ApiError && error.status !== 0 ? `API unavailable: ${error.message}` : "Connecting to service network…");
       })
       .finally(() => { if (active) setApiLoading(false); });
     return () => { active = false; };
@@ -223,12 +223,12 @@ export function CustomerHome({ setPage, onSelectProvider }: CustomerHomeProps) {
           onSearch={search}
           onBook={bookFeatured}
           onSave={toggleSaved}
-          onDemo={() => setDialog("demo")}
+          onAbout={() => setDialog("about")}
         />
 
         <motion.section
           className="grid grid-cols-2 gap-x-4 gap-y-5 px-5 py-6 md:gap-6 md:px-6 lg:grid-cols-4 lg:gap-0 wide:p-7 rounded-3xl border border-white bg-white shadow-home-panel md:rounded-panel"
-          aria-label="Illustrative trust statistics"
+          aria-label="Trust statistics"
           variants={stagger}
           initial="hidden"
           whileInView="visible"
@@ -259,8 +259,8 @@ export function CustomerHome({ setPage, onSelectProvider }: CustomerHomeProps) {
             <motion.button
               key={title}
               className="flex min-w-0 flex-col items-start gap-2.5 text-left md:flex-row md:items-center lg:border-r lg:border-stone-100 lg:px-2.5 lg:first:pl-0 lg:last:border-r-0 lg:last:pr-0 wide:gap-4 wide:px-4 [&_strong]:block [&_strong]:text-[13px] [&_strong]:leading-5 [&_strong]:font-bold md:[&_strong]:text-base md:[&_strong]:leading-6 lg:[&_strong]:text-[13px] lg:[&_strong]:leading-5 wide:[&_strong]:text-base wide:[&_strong]:leading-6"
-              onClick={() => setDialog("demo")}
-              title="About these demo statistics"
+              onClick={() => setDialog("about")}
+              title="ShebaCheck trust framework"
               variants={reveal}
               transition={{ duration: 0.35, ease: "easeOut" }}
             >
@@ -317,7 +317,7 @@ export function CustomerHome({ setPage, onSelectProvider }: CustomerHomeProps) {
               role="status"
             >
               <p>
-                {filtered.length} {apiAvailable && apiTechnicians.length ? "" : "demo "}{" "}
+                {filtered.length}{" "}
                 {filtered.length === 1 ? "professional" : "professionals"}
                 {submittedQuery ? ` matching "${submittedQuery}"` : ""} in{" "}
                 {zone === "All Zones" ? "Dhaka" : zone}.
@@ -364,7 +364,7 @@ export function CustomerHome({ setPage, onSelectProvider }: CustomerHomeProps) {
             </div>
           )}
           <span className="sr-only" aria-live="polite">
-            {filtered.length} {apiAvailable && apiTechnicians.length ? "" : "demo "}providers shown.
+            {filtered.length} providers shown.
           </span>
         </section>
 

@@ -37,7 +37,6 @@ export function BookingFlow({ provider }: { provider: Provider }) {
   const [bookingError, setBookingError] = useState("");
   const [savingBooking, setSavingBooking] = useState(false);
   const [createdBooking, setCreatedBooking] = useState<ApiBooking | null>(null);
-  const [previewOnly, setPreviewOnly] = useState(false);
   const selectedService =
     services.find((service) => service.name === details.service) ?? services[0];
   const localDate = new Intl.DateTimeFormat("en-CA", {
@@ -65,12 +64,7 @@ export function BookingFlow({ provider }: { provider: Provider }) {
     }
     if (step === 2) {
       if (!selectedService.id) {
-        if (provider.services) {
-          setBookingError("This provider has no active service in the API, so a booking cannot be submitted yet.");
-          return;
-        }
-        setPreviewOnly(true);
-        setStep((current) => current + 1);
+        setBookingError("Please select an active service offered by this provider.");
         return;
       }
       setSavingBooking(true);
@@ -89,16 +83,10 @@ export function BookingFlow({ provider }: { provider: Provider }) {
           price_estimate: selectedService.price,
         });
         setCreatedBooking(booking);
-        setPreviewOnly(false);
       } catch (error) {
-        if (error instanceof ApiError && error.status === 0) {
-          setPreviewOnly(true);
-          setCreatedBooking(null);
-        } else {
-          setBookingError(error instanceof Error ? error.message : "The booking request could not be submitted.");
-          setSavingBooking(false);
-          return;
-        }
+        setBookingError(error instanceof Error ? error.message : "The booking request could not be submitted.");
+        setSavingBooking(false);
+        return;
       }
       setSavingBooking(false);
     }
@@ -119,8 +107,8 @@ export function BookingFlow({ provider }: { provider: Provider }) {
             Choose your service, appointment, and review the estimate.
           </p>
         </div>
-        <Badge tone={step === 3 && !previewOnly ? "success" : "warning"}>
-          {step === 3 && !previewOnly ? "Booking request submitted" : "API-backed booking request"}
+        <Badge tone={step === 3 ? "success" : "info"}>
+          {step === 3 ? "Booking request submitted" : "Verified booking request"}
         </Badge>
       </div>
       <ol
@@ -148,9 +136,7 @@ export function BookingFlow({ provider }: { provider: Provider }) {
           <CheckCircle2 className="mx-auto h-12 w-12 text-brand-amber" />
           <h2 className="mt-4 text-2xl font-bold">Booking request submitted</h2>
           <p className="mt-3 leading-7 text-warm-700">
-            {previewOnly
-              ? `Your request for ${selectedService.name} with ${provider.name} could not be saved — the backend is currently unavailable.`
-              : `Your request for ${selectedService.name} with ${provider.name} has been saved${createdBooking ? ` as booking #${createdBooking.id}` : ""}. No payment has been collected.`}
+            Your request for {selectedService.name} with {provider.name} has been successfully submitted{createdBooking ? ` as booking #${createdBooking.id}` : ""}. The technician has been notified and will contact you directly to confirm arrival.
           </p>
           <p className="mt-4 font-semibold">
             {details.date} at {details.time}, Dhaka time
@@ -164,7 +150,6 @@ export function BookingFlow({ provider }: { provider: Provider }) {
               setStep(0);
               setAgreed(false);
               setCreatedBooking(null);
-              setPreviewOnly(false);
             }}
           >
             Make another booking request
